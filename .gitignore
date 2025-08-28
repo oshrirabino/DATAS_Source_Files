@@ -1,0 +1,6 @@
+test1.cpp
+old_imp/*
+*.out
+*.exe
+*.o
+.vscode/*
