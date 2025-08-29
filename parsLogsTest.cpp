@@ -59,7 +59,6 @@ struct DummyTree {
     }
 };
 
-// Function for DummyTree - add this to your test script
 void printDummyTreeStructure(DummyNode* node, const std::string& prefix = "", bool isLast = true) {
     if (node == nullptr) {
         std::cout << prefix << (isLast ? "└── " : "├── ") << "null" << std::endl;

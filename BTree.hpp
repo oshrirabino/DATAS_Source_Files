@@ -20,18 +20,18 @@ protected:
     int min_keys;   // Minimum number of keys in a non-root node (t-1)
     int min_size;   // Minimum number of children in a non-root internal node (t)
     std::unique_ptr<BNode> root;
-    int keyIndex(BNode *node, T val);
-    bool findVal(BNode *node, T val);
-    std::unique_ptr<BNode> splitSibling(BNode *node, T& midVal);
-    void splitChild(BNode *node, int index);
-    void insertVal(BNode *node, T val);
-    void mergeSiblings(BNode *node, int idx);
-    void borrowFromRight(BNode *node, int idx);
-    void borrowFromLeft(BNode *node, int idx);
+    virtual int keyIndex(BNode *node, T val);
+    virtual bool findVal(BNode *node, T val);
+    virtual std::unique_ptr<BNode> splitSibling(BNode *node, T& midVal);
+    virtual void splitChild(BNode *node, int index);
+    virtual void insertVal(BNode *node, T val);
+    virtual void mergeSiblings(BNode *node, int idx);
+    virtual void borrowFromRight(BNode *node, int idx);
+    virtual void borrowFromLeft(BNode *node, int idx);
     void fixChild(BNode *node, int idx);
     T findSuc(BNode *node);
     T findPred(BNode *node);
-    void removeVal(BNode *node, T val);
+    virtual void removeVal(BNode *node, T val);
 
 public:
     BTree(int order_);
