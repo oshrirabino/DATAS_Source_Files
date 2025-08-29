@@ -52,7 +52,7 @@ void print_bnode(std::ostream& os, const typename BTree<T>::BNode* node, int lev
     if (!node) return;
 
     std::string indent(level * 4, ' ');
-    os << indent << "Keys: [";
+    os << indent << "[";
     for (size_t i = 0; i < node->keys.size(); ++i) {
         os << node->keys[i];
         if (i + 1 < node->keys.size()) os << ", ";
