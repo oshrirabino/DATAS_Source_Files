@@ -1,0 +1,415 @@
+[TREE_INSERT] value=1 root=0x5e957c85b860
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]
+[Insert Val] node=0x5e957c85b860 value=1
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]
+[find Index] search index for val=1 in node=0x5e957c85b860: found index=0
+[Insert Leaf] node=0x5e957c85b860 inserting key=1 at index=0
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[1] children=[]
+[TREE_INSERT_COMPLETE] value=1 root=0x5e957c85b860
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[1] children=[]
+[TREE_INSERT] value=4 root=0x5e957c85b860
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[1] children=[]
+[Insert Val] node=0x5e957c85b860 value=4
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[1] children=[]
+[find Index] search index for val=4 in node=0x5e957c85b860: found index=1
+[Insert Leaf] node=0x5e957c85b860 inserting key=4 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[1,4] children=[]
+[TREE_INSERT_COMPLETE] value=4 root=0x5e957c85b860
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[1,4] children=[]
+[TREE_INSERT] value=3 root=0x5e957c85b860
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[1,4] children=[]
+[Insert Val] node=0x5e957c85b860 value=3
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[1,4] children=[]
+[find Index] search index for val=3 in node=0x5e957c85b860: found index=1
+[Insert Leaf] node=0x5e957c85b860 inserting key=3 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[1,3,4] children=[]
+[TREE_INSERT_COMPLETE] value=3 root=0x5e957c85b860
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[1,3,4] children=[]
+[TREE_FIND] value=5 root=0x5e957c85b860
+[find Index] search index for val=5 in node=0x5e957c85b860: found index=3
+[TREE_FIND_RESULT] value=5 found=false
+[TREE_INSERT] value=9 root=0x5e957c85b860
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[1,3,4] children=[]
+[Root Split] root=0x5e957c85b860 is full, creating new root
+[Split Sibling] node=0x5e957c85b860 keys_size=3
+[NODE_STATE] BEFORE_SPLIT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[1,3,4] children=[]
+[Split Result] original_node=0x5e957c85b860 new_sibling=0x5e957c85da80 mid_val=3
+[Split Keys] original_node=0x5e957c85b860 original_keys=[1] new_sibling=0x5e957c85da80 new_keys=[4]
+[NODE_STATE] AFTER_SPLIT_ORIGINAL node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[1] children=[]
+[NODE_STATE] AFTER_SPLIT_NEW node=0x5e957c85da80 is_leaf=true keys_count=1 children_count=0 keys=[4] children=[]
+[Insert Val] node=0x5e957c85c590 value=9
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=9 in node=0x5e957c85c590: found index=1
+[Insert Internal] node=0x5e957c85c590 going to child at index=1 child=0x5e957c85da80
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[Insert Val] node=0x5e957c85da80 value=9
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85da80 is_leaf=true keys_count=1 children_count=0 keys=[4] children=[]
+[find Index] search index for val=9 in node=0x5e957c85da80: found index=1
+[Insert Leaf] node=0x5e957c85da80 inserting key=9 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85da80 is_leaf=true keys_count=2 children_count=0 keys=[4,9] children=[]
+[TREE_INSERT_COMPLETE] value=9 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85b860,0x5e957c85da80]
+[TREE_REMOVE] value=3 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=3 in node=0x5e957c85c590: found index=0
+[Remove Val] node=0x5e957c85c590 searching=3
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=3 in node=0x5e957c85c590: found index=0
+[Remove Internal Found] node=0x5e957c85c590 found key=3 at index=0
+[Remove Use Succ] right child=0x5e957c85da80 has enough keys, finding successor
+[Remove Succ Found] successor=4 replacing key=3 in node=0x5e957c85c590
+[Remove Recurse] removing=4 from child=0x5e957c85da80
+[PARENT_CHILD] REMOVE_RECURSE_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[Remove Val] node=0x5e957c85da80 searching=4
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85da80 is_leaf=true keys_count=2 children_count=0 keys=[4,9] children=[]
+[find Index] search index for val=4 in node=0x5e957c85da80: found index=0
+[Remove Leaf] node=0x5e957c85da80 removing key=4 at index=0
+[NODE_STATE] AFTER_REMOVE_LEAF node=0x5e957c85da80 is_leaf=true keys_count=1 children_count=0 keys=[9] children=[]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[TREE_REMOVE_COMPLETE] value=3 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[TREE_INSERT] value=5 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[Insert Val] node=0x5e957c85c590 value=5
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=5 in node=0x5e957c85c590: found index=1
+[Insert Internal] node=0x5e957c85c590 going to child at index=1 child=0x5e957c85da80
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[Insert Val] node=0x5e957c85da80 value=5
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85da80 is_leaf=true keys_count=1 children_count=0 keys=[9] children=[]
+[find Index] search index for val=5 in node=0x5e957c85da80: found index=0
+[Insert Leaf] node=0x5e957c85da80 inserting key=5 at index=0
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85da80 is_leaf=true keys_count=2 children_count=0 keys=[5,9] children=[]
+[TREE_INSERT_COMPLETE] value=5 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[TREE_INSERT] value=6 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[Insert Val] node=0x5e957c85c590 value=6
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=6 in node=0x5e957c85c590: found index=1
+[Insert Internal] node=0x5e957c85c590 going to child at index=1 child=0x5e957c85da80
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[Insert Val] node=0x5e957c85da80 value=6
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85da80 is_leaf=true keys_count=2 children_count=0 keys=[5,9] children=[]
+[find Index] search index for val=6 in node=0x5e957c85da80: found index=1
+[Insert Leaf] node=0x5e957c85da80 inserting key=6 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85da80 is_leaf=true keys_count=3 children_count=0 keys=[5,6,9] children=[]
+[TREE_INSERT_COMPLETE] value=6 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[TREE_INSERT] value=3 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[Insert Val] node=0x5e957c85c590 value=3
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=3 in node=0x5e957c85c590: found index=0
+[Insert Internal] node=0x5e957c85c590 going to child at index=0 child=0x5e957c85b860
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Val] node=0x5e957c85b860 value=3
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[1] children=[]
+[find Index] search index for val=3 in node=0x5e957c85b860: found index=1
+[Insert Leaf] node=0x5e957c85b860 inserting key=3 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[1,3] children=[]
+[TREE_INSERT_COMPLETE] value=3 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[TREE_INSERT] value=90 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[Insert Val] node=0x5e957c85c590 value=90
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[find Index] search index for val=90 in node=0x5e957c85c590: found index=1
+[Insert Internal] node=0x5e957c85c590 going to child at index=1 child=0x5e957c85da80
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[Insert Split] child=0x5e957c85da80 is full, splitting before insertion
+[Split Child] parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[NODE_STATE] PARENT_BEFORE_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85b860,0x5e957c85da80]
+[NODE_STATE] CHILD_BEFORE_SPLIT node=0x5e957c85da80 is_leaf=true keys_count=3 children_count=0 keys=[5,6,9] children=[]
+[Split Sibling] node=0x5e957c85da80 keys_size=3
+[NODE_STATE] BEFORE_SPLIT node=0x5e957c85da80 is_leaf=true keys_count=3 children_count=0 keys=[5,6,9] children=[]
+[Split Result] original_node=0x5e957c85da80 new_sibling=0x5e957c85db90 mid_val=6
+[Split Keys] original_node=0x5e957c85da80 original_keys=[5] new_sibling=0x5e957c85db90 new_keys=[9]
+[NODE_STATE] AFTER_SPLIT_ORIGINAL node=0x5e957c85da80 is_leaf=true keys_count=1 children_count=0 keys=[5] children=[]
+[NODE_STATE] AFTER_SPLIT_NEW node=0x5e957c85db90 is_leaf=true keys_count=1 children_count=0 keys=[9] children=[]
+[Split Child Result] parent=0x5e957c85c590 left_child=0x5e957c85da80 right_child=0x5e957c85db90 promoted_key=6
+[NODE_STATE] PARENT_AFTER_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[PARENT_CHILD] LEFT_CHILD_AFTER_SPLIT parent=0x5e957c85c590 child_index=1 child=0x5e957c85da80
+[PARENT_CHILD] RIGHT_CHILD_AFTER_SPLIT parent=0x5e957c85c590 child_index=2 child=0x5e957c85db90
+[find Index] search index for val=90 in node=0x5e957c85c590: found index=2
+[Insert After Split] new index=2 going to child=0x5e957c85db90
+[PARENT_CHILD] INSERT_AFTER_SPLIT parent=0x5e957c85c590 child_index=2 child=0x5e957c85db90
+[Insert Val] node=0x5e957c85db90 value=90
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85db90 is_leaf=true keys_count=1 children_count=0 keys=[9] children=[]
+[find Index] search index for val=90 in node=0x5e957c85db90: found index=1
+[Insert Leaf] node=0x5e957c85db90 inserting key=90 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85db90 is_leaf=true keys_count=2 children_count=0 keys=[9,90] children=[]
+[TREE_INSERT_COMPLETE] value=90 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[TREE_INSERT] value=89 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[Insert Val] node=0x5e957c85c590 value=89
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[find Index] search index for val=89 in node=0x5e957c85c590: found index=2
+[Insert Internal] node=0x5e957c85c590 going to child at index=2 child=0x5e957c85db90
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=2 child=0x5e957c85db90
+[Insert Val] node=0x5e957c85db90 value=89
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85db90 is_leaf=true keys_count=2 children_count=0 keys=[9,90] children=[]
+[find Index] search index for val=89 in node=0x5e957c85db90: found index=1
+[Insert Leaf] node=0x5e957c85db90 inserting key=89 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85db90 is_leaf=true keys_count=3 children_count=0 keys=[9,89,90] children=[]
+[TREE_INSERT_COMPLETE] value=89 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[TREE_INSERT] value=0 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[Insert Val] node=0x5e957c85c590 value=0
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[find Index] search index for val=0 in node=0x5e957c85c590: found index=0
+[Insert Internal] node=0x5e957c85c590 going to child at index=0 child=0x5e957c85b860
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Val] node=0x5e957c85b860 value=0
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[1,3] children=[]
+[find Index] search index for val=0 in node=0x5e957c85b860: found index=0
+[Insert Leaf] node=0x5e957c85b860 inserting key=0 at index=0
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[0,1,3] children=[]
+[TREE_INSERT_COMPLETE] value=0 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[TREE_INSERT] value=-4 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[Insert Val] node=0x5e957c85c590 value=-4
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[find Index] search index for val=-4 in node=0x5e957c85c590: found index=0
+[Insert Internal] node=0x5e957c85c590 going to child at index=0 child=0x5e957c85b860
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Split] child=0x5e957c85b860 is full, splitting before insertion
+[Split Child] parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[NODE_STATE] PARENT_BEFORE_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[4,6] children=[0x5e957c85b860,0x5e957c85da80,0x5e957c85db90]
+[NODE_STATE] CHILD_BEFORE_SPLIT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[0,1,3] children=[]
+[Split Sibling] node=0x5e957c85b860 keys_size=3
+[NODE_STATE] BEFORE_SPLIT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[0,1,3] children=[]
+[Split Result] original_node=0x5e957c85b860 new_sibling=0x5e957c85dc90 mid_val=1
+[Split Keys] original_node=0x5e957c85b860 original_keys=[0] new_sibling=0x5e957c85dc90 new_keys=[3]
+[NODE_STATE] AFTER_SPLIT_ORIGINAL node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[0] children=[]
+[NODE_STATE] AFTER_SPLIT_NEW node=0x5e957c85dc90 is_leaf=true keys_count=1 children_count=0 keys=[3] children=[]
+[Split Child Result] parent=0x5e957c85c590 left_child=0x5e957c85b860 right_child=0x5e957c85dc90 promoted_key=1
+[NODE_STATE] PARENT_AFTER_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[1,4,6] children=[0x5e957c85b860,0x5e957c85dc90,0x5e957c85da80,0x5e957c85db90]
+[PARENT_CHILD] LEFT_CHILD_AFTER_SPLIT parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[PARENT_CHILD] RIGHT_CHILD_AFTER_SPLIT parent=0x5e957c85c590 child_index=1 child=0x5e957c85dc90
+[find Index] search index for val=-4 in node=0x5e957c85c590: found index=0
+[Insert After Split] new index=0 going to child=0x5e957c85b860
+[PARENT_CHILD] INSERT_AFTER_SPLIT parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Val] node=0x5e957c85b860 value=-4
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[0] children=[]
+[find Index] search index for val=-4 in node=0x5e957c85b860: found index=0
+[Insert Leaf] node=0x5e957c85b860 inserting key=-4 at index=0
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[-4,0] children=[]
+[TREE_INSERT_COMPLETE] value=-4 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[1,4,6] children=[0x5e957c85b860,0x5e957c85dc90,0x5e957c85da80,0x5e957c85db90]
+[TREE_INSERT] value=-3 root=0x5e957c85c590
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[1,4,6] children=[0x5e957c85b860,0x5e957c85dc90,0x5e957c85da80,0x5e957c85db90]
+[Root Split] root=0x5e957c85c590 is full, creating new root
+[Split Sibling] node=0x5e957c85c590 keys_size=3
+[NODE_STATE] BEFORE_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[1,4,6] children=[0x5e957c85b860,0x5e957c85dc90,0x5e957c85da80,0x5e957c85db90]
+[Split Result] original_node=0x5e957c85c590 new_sibling=0x5e957c85d090 mid_val=4
+[Split Keys] original_node=0x5e957c85c590 original_keys=[1] new_sibling=0x5e957c85d090 new_keys=[6]
+[NODE_STATE] AFTER_SPLIT_ORIGINAL node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[1] children=[0x5e957c85b860,0x5e957c85dc90]
+[NODE_STATE] AFTER_SPLIT_NEW node=0x5e957c85d090 is_leaf=false keys_count=1 children_count=2 keys=[6] children=[0x5e957c85da80,0x5e957c85db90]
+[Insert Val] node=0x5e957c85de20 value=-3
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=-3 in node=0x5e957c85de20: found index=0
+[Insert Internal] node=0x5e957c85de20 going to child at index=0 child=0x5e957c85c590
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85de20 child_index=0 child=0x5e957c85c590
+[Insert Val] node=0x5e957c85c590 value=-3
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[1] children=[0x5e957c85b860,0x5e957c85dc90]
+[find Index] search index for val=-3 in node=0x5e957c85c590: found index=0
+[Insert Internal] node=0x5e957c85c590 going to child at index=0 child=0x5e957c85b860
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Val] node=0x5e957c85b860 value=-3
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[-4,0] children=[]
+[find Index] search index for val=-3 in node=0x5e957c85b860: found index=1
+[Insert Leaf] node=0x5e957c85b860 inserting key=-3 at index=1
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[-4,-3,0] children=[]
+[TREE_INSERT_COMPLETE] value=-3 root=0x5e957c85de20
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_INSERT] value=-14 root=0x5e957c85de20
+[NODE_STATE] ROOT_BEFORE_INSERT node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[Insert Val] node=0x5e957c85de20 value=-14
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=-14 in node=0x5e957c85de20: found index=0
+[Insert Internal] node=0x5e957c85de20 going to child at index=0 child=0x5e957c85c590
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85de20 child_index=0 child=0x5e957c85c590
+[Insert Val] node=0x5e957c85c590 value=-14
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[1] children=[0x5e957c85b860,0x5e957c85dc90]
+[find Index] search index for val=-14 in node=0x5e957c85c590: found index=0
+[Insert Internal] node=0x5e957c85c590 going to child at index=0 child=0x5e957c85b860
+[PARENT_CHILD] INSERT_GOING_TO_CHILD parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Split] child=0x5e957c85b860 is full, splitting before insertion
+[Split Child] parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[NODE_STATE] PARENT_BEFORE_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[1] children=[0x5e957c85b860,0x5e957c85dc90]
+[NODE_STATE] CHILD_BEFORE_SPLIT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[-4,-3,0] children=[]
+[Split Sibling] node=0x5e957c85b860 keys_size=3
+[NODE_STATE] BEFORE_SPLIT node=0x5e957c85b860 is_leaf=true keys_count=3 children_count=0 keys=[-4,-3,0] children=[]
+[Split Result] original_node=0x5e957c85b860 new_sibling=0x5e957c85d150 mid_val=-3
+[Split Keys] original_node=0x5e957c85b860 original_keys=[-4] new_sibling=0x5e957c85d150 new_keys=[0]
+[NODE_STATE] AFTER_SPLIT_ORIGINAL node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[-4] children=[]
+[NODE_STATE] AFTER_SPLIT_NEW node=0x5e957c85d150 is_leaf=true keys_count=1 children_count=0 keys=[0] children=[]
+[Split Child Result] parent=0x5e957c85c590 left_child=0x5e957c85b860 right_child=0x5e957c85d150 promoted_key=-3
+[NODE_STATE] PARENT_AFTER_SPLIT node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[-3,1] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85dc90]
+[PARENT_CHILD] LEFT_CHILD_AFTER_SPLIT parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[PARENT_CHILD] RIGHT_CHILD_AFTER_SPLIT parent=0x5e957c85c590 child_index=1 child=0x5e957c85d150
+[find Index] search index for val=-14 in node=0x5e957c85c590: found index=0
+[Insert After Split] new index=0 going to child=0x5e957c85b860
+[PARENT_CHILD] INSERT_AFTER_SPLIT parent=0x5e957c85c590 child_index=0 child=0x5e957c85b860
+[Insert Val] node=0x5e957c85b860 value=-14
+[NODE_STATE] BEFORE_INSERT node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[-4] children=[]
+[find Index] search index for val=-14 in node=0x5e957c85b860: found index=0
+[Insert Leaf] node=0x5e957c85b860 inserting key=-14 at index=0
+[NODE_STATE] AFTER_INSERT_LEAF node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[-14,-4] children=[]
+[TREE_INSERT_COMPLETE] value=-14 root=0x5e957c85de20
+[NODE_STATE] ROOT_AFTER_INSERT node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE] value=4 root=0x5e957c85de20
+[NODE_STATE] ROOT_BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=4 in node=0x5e957c85de20: found index=0
+[Remove Val] node=0x5e957c85de20 searching=4
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[4] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=4 in node=0x5e957c85de20: found index=0
+[Remove Internal Found] node=0x5e957c85de20 found key=4 at index=0
+[Remove Use Pred] left child=0x5e957c85c590 has enough keys, finding predecessor
+[Remove Pred Found] predecessor=3 replacing key=4 in node=0x5e957c85de20
+[Remove Recurse] removing=3 from child=0x5e957c85c590
+[PARENT_CHILD] REMOVE_RECURSE_TO_CHILD parent=0x5e957c85de20 child_index=0 child=0x5e957c85c590
+[Remove Val] node=0x5e957c85c590 searching=3
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[-3,1] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85dc90]
+[find Index] search index for val=3 in node=0x5e957c85c590: found index=2
+[Remove Internal Miss] key=3 not at current level, going to child at index=2 child=0x5e957c85dc90
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85c590 child_index=2 child=0x5e957c85dc90
+[Remove Val] node=0x5e957c85dc90 searching=3
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85dc90 is_leaf=true keys_count=1 children_count=0 keys=[3] children=[]
+[find Index] search index for val=3 in node=0x5e957c85dc90: found index=0
+[Remove Leaf] node=0x5e957c85dc90 removing key=3 at index=0
+[NODE_STATE] AFTER_REMOVE_LEAF node=0x5e957c85dc90 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]
+[Merge Siblings] parent=0x5e957c85c590 left=0x5e957c85d150 right=0x5e957c85dc90 key_to_merge=1
+[NODE_STATE] PARENT_BEFORE_MERGE node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[-3,1] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85dc90]
+[NODE_STATE] LEFT_BEFORE_MERGE node=0x5e957c85d150 is_leaf=true keys_count=1 children_count=0 keys=[0] children=[]
+[NODE_STATE] RIGHT_BEFORE_MERGE node=0x5e957c85dc90 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]
+[Merge Result] merged_node=0x5e957c85d150 deleted_node=0x5e957c85dc90
+[NODE_STATE] PARENT_AFTER_MERGE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-3] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] MERGED_NODE node=0x5e957c85d150 is_leaf=true keys_count=2 children_count=0 keys=[0,1] children=[]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-3] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE_COMPLETE] value=4 root=0x5e957c85de20
+[NODE_STATE] ROOT_AFTER_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE] value=1 root=0x5e957c85de20
+[NODE_STATE] ROOT_BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=1 in node=0x5e957c85de20: found index=0
+[find Index] search index for val=1 in node=0x5e957c85c590: found index=1
+[find Index] search index for val=1 in node=0x5e957c85d150: found index=1
+[Remove Val] node=0x5e957c85de20 searching=1
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=1 in node=0x5e957c85de20: found index=0
+[Remove Internal Miss] key=1 not at current level, going to child at index=0 child=0x5e957c85c590
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85de20 child_index=0 child=0x5e957c85c590
+[Remove Val] node=0x5e957c85c590 searching=1
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-3] children=[0x5e957c85b860,0x5e957c85d150]
+[find Index] search index for val=1 in node=0x5e957c85c590: found index=1
+[Remove Internal Miss] key=1 not at current level, going to child at index=1 child=0x5e957c85d150
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85d150
+[Remove Val] node=0x5e957c85d150 searching=1
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85d150 is_leaf=true keys_count=2 children_count=0 keys=[0,1] children=[]
+[find Index] search index for val=1 in node=0x5e957c85d150: found index=1
+[Remove Leaf] node=0x5e957c85d150 removing key=1 at index=1
+[NODE_STATE] AFTER_REMOVE_LEAF node=0x5e957c85d150 is_leaf=true keys_count=1 children_count=0 keys=[0] children=[]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-3] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE_COMPLETE] value=1 root=0x5e957c85de20
+[NODE_STATE] ROOT_AFTER_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE] value=89 root=0x5e957c85de20
+[NODE_STATE] ROOT_BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=89 in node=0x5e957c85de20: found index=1
+[find Index] search index for val=89 in node=0x5e957c85d090: found index=1
+[find Index] search index for val=89 in node=0x5e957c85db90: found index=1
+[Remove Val] node=0x5e957c85de20 searching=89
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=89 in node=0x5e957c85de20: found index=1
+[Remove Internal Miss] key=89 not at current level, going to child at index=1 child=0x5e957c85d090
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85de20 child_index=1 child=0x5e957c85d090
+[Remove Val] node=0x5e957c85d090 searching=89
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85d090 is_leaf=false keys_count=1 children_count=2 keys=[6] children=[0x5e957c85da80,0x5e957c85db90]
+[find Index] search index for val=89 in node=0x5e957c85d090: found index=1
+[Remove Internal Miss] key=89 not at current level, going to child at index=1 child=0x5e957c85db90
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85d090 child_index=1 child=0x5e957c85db90
+[Remove Val] node=0x5e957c85db90 searching=89
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85db90 is_leaf=true keys_count=3 children_count=0 keys=[9,89,90] children=[]
+[find Index] search index for val=89 in node=0x5e957c85db90: found index=1
+[Remove Leaf] node=0x5e957c85db90 removing key=89 at index=1
+[NODE_STATE] AFTER_REMOVE_LEAF node=0x5e957c85db90 is_leaf=true keys_count=2 children_count=0 keys=[9,90] children=[]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85d090 is_leaf=false keys_count=1 children_count=2 keys=[6] children=[0x5e957c85da80,0x5e957c85db90]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE_COMPLETE] value=89 root=0x5e957c85de20
+[NODE_STATE] ROOT_AFTER_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE] value=0 root=0x5e957c85de20
+[NODE_STATE] ROOT_BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=0 in node=0x5e957c85de20: found index=0
+[find Index] search index for val=0 in node=0x5e957c85c590: found index=1
+[find Index] search index for val=0 in node=0x5e957c85d150: found index=0
+[Remove Val] node=0x5e957c85de20 searching=0
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=0 in node=0x5e957c85de20: found index=0
+[Remove Internal Miss] key=0 not at current level, going to child at index=0 child=0x5e957c85c590
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85de20 child_index=0 child=0x5e957c85c590
+[Remove Val] node=0x5e957c85c590 searching=0
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-3] children=[0x5e957c85b860,0x5e957c85d150]
+[find Index] search index for val=0 in node=0x5e957c85c590: found index=1
+[Remove Internal Miss] key=0 not at current level, going to child at index=1 child=0x5e957c85d150
+[PARENT_CHILD] REMOVE_GOING_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85d150
+[Remove Val] node=0x5e957c85d150 searching=0
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85d150 is_leaf=true keys_count=1 children_count=0 keys=[0] children=[]
+[find Index] search index for val=0 in node=0x5e957c85d150: found index=0
+[Remove Leaf] node=0x5e957c85d150 removing key=0 at index=0
+[NODE_STATE] AFTER_REMOVE_LEAF node=0x5e957c85d150 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]
+[Borrow Left] Move from left=0x5e957c85b860 key=-4 to father=0x5e957c85c590 and move key=-3 to right=0x5e957c85d150
+[NODE_STATE] PARENT_BEFORE_BORROW_LEFT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-3] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] LEFT_BEFORE_BORROW node=0x5e957c85b860 is_leaf=true keys_count=2 children_count=0 keys=[-14,-4] children=[]
+[NODE_STATE] RIGHT_BEFORE_BORROW node=0x5e957c85d150 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]
+[NODE_STATE] PARENT_AFTER_BORROW_LEFT node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-4] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] LEFT_AFTER_BORROW node=0x5e957c85b860 is_leaf=true keys_count=1 children_count=0 keys=[-14] children=[]
+[NODE_STATE] RIGHT_AFTER_BORROW node=0x5e957c85d150 is_leaf=true keys_count=1 children_count=0 keys=[-3] children=[]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-4] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE_COMPLETE] value=0 root=0x5e957c85de20
+[NODE_STATE] ROOT_AFTER_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[TREE_REMOVE] value=3 root=0x5e957c85de20
+[NODE_STATE] ROOT_BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=3 in node=0x5e957c85de20: found index=0
+[Remove Val] node=0x5e957c85de20 searching=3
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[find Index] search index for val=3 in node=0x5e957c85de20: found index=0
+[Remove Internal Found] node=0x5e957c85de20 found key=3 at index=0
+[Remove Merge] both children have min keys, merging at index=0
+[Merge Siblings] parent=0x5e957c85de20 left=0x5e957c85c590 right=0x5e957c85d090 key_to_merge=3
+[NODE_STATE] PARENT_BEFORE_MERGE node=0x5e957c85de20 is_leaf=false keys_count=1 children_count=2 keys=[3] children=[0x5e957c85c590,0x5e957c85d090]
+[NODE_STATE] LEFT_BEFORE_MERGE node=0x5e957c85c590 is_leaf=false keys_count=1 children_count=2 keys=[-4] children=[0x5e957c85b860,0x5e957c85d150]
+[NODE_STATE] RIGHT_BEFORE_MERGE node=0x5e957c85d090 is_leaf=false keys_count=1 children_count=2 keys=[6] children=[0x5e957c85da80,0x5e957c85db90]
+[Merge Result] merged_node=0x5e957c85c590 deleted_node=0x5e957c85d090
+[NODE_STATE] PARENT_AFTER_MERGE node=0x5e957c85de20 is_leaf=false keys_count=0 children_count=1 keys=[] children=[0x5e957c85c590]
+[NODE_STATE] MERGED_NODE node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[-4,3,6] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85da80,0x5e957c85db90]
+[Remove Recurse] removing=3 from child=0x5e957c85c590
+[PARENT_CHILD] REMOVE_RECURSE_TO_CHILD parent=0x5e957c85de20 child_index=0 child=0x5e957c85c590
+[Remove Val] node=0x5e957c85c590 searching=3
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[-4,3,6] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85da80,0x5e957c85db90]
+[find Index] search index for val=3 in node=0x5e957c85c590: found index=1
+[Remove Internal Found] node=0x5e957c85c590 found key=3 at index=1
+[Remove Merge] both children have min keys, merging at index=1
+[Merge Siblings] parent=0x5e957c85c590 left=0x5e957c85d150 right=0x5e957c85da80 key_to_merge=3
+[NODE_STATE] PARENT_BEFORE_MERGE node=0x5e957c85c590 is_leaf=false keys_count=3 children_count=4 keys=[-4,3,6] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85da80,0x5e957c85db90]
+[NODE_STATE] LEFT_BEFORE_MERGE node=0x5e957c85d150 is_leaf=true keys_count=1 children_count=0 keys=[-3] children=[]
+[NODE_STATE] RIGHT_BEFORE_MERGE node=0x5e957c85da80 is_leaf=true keys_count=1 children_count=0 keys=[5] children=[]
+[Merge Result] merged_node=0x5e957c85d150 deleted_node=0x5e957c85da80
+[NODE_STATE] PARENT_AFTER_MERGE node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[-4,6] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85db90]
+[NODE_STATE] MERGED_NODE node=0x5e957c85d150 is_leaf=true keys_count=3 children_count=0 keys=[-3,3,5] children=[]
+[Remove Recurse] removing=3 from child=0x5e957c85d150
+[PARENT_CHILD] REMOVE_RECURSE_TO_CHILD parent=0x5e957c85c590 child_index=1 child=0x5e957c85d150
+[Remove Val] node=0x5e957c85d150 searching=3
+[NODE_STATE] BEFORE_REMOVE node=0x5e957c85d150 is_leaf=true keys_count=3 children_count=0 keys=[-3,3,5] children=[]
+[find Index] search index for val=3 in node=0x5e957c85d150: found index=1
+[Remove Leaf] node=0x5e957c85d150 removing key=3 at index=1
+[NODE_STATE] AFTER_REMOVE_LEAF node=0x5e957c85d150 is_leaf=true keys_count=2 children_count=0 keys=[-3,5] children=[]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[-4,6] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85db90]
+[NODE_STATE] AFTER_REMOVE_FIX node=0x5e957c85de20 is_leaf=false keys_count=0 children_count=1 keys=[] children=[0x5e957c85c590]
+[TREE_REMOVE_COMPLETE] value=3 root=0x5e957c85c590
+[NODE_STATE] ROOT_AFTER_REMOVE node=0x5e957c85c590 is_leaf=false keys_count=2 children_count=3 keys=[-4,6] children=[0x5e957c85b860,0x5e957c85d150,0x5e957c85db90]

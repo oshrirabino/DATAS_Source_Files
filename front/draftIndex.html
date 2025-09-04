@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>B-Tree Animator</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+    canvas { border: 1px solid #333; display: block; margin: 20px auto; background: #fafafa; }
+  </style>
+</head>
+<body>
+  <h1>B-Tree Log Animator (Draft)</h1>
+  <canvas id="btreeCanvas" width="800" height="600"></canvas>
+  <script type="module">
+    import { LogProcessor } from './LogProcessor.js';
+    import { TreeModel } from './TreeModel.js';
+    import { Animator } from './Animator.js';
+
+    const canvas = document.getElementById('btreeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const treeModel = new TreeModel(3);
+    const animator = new Animator(ctx);
+
+    const logProcessor = new LogProcessor((event) => {
+      treeModel.applyEvent(event);
+      animator.animateChange(event, treeModel);
+    });
+
+    // Demo feed of logs (in a real case, these would come from file/stream)
+    const demoLogs = [
+      '[TREE_INSERT] key=10',
+      '[TREE_INSERT] key=20',
+      '[TREE_INSERT] key=5',
+      '[TREE_SPLIT] node=Root',
+      '[TREE_INSERT] key=15'
+    ];
+
+    let i = 0;
+    function feedNextLog() {
+      if (i < demoLogs.length) {
+        logProcessor.feedLog(demoLogs[i]);
+        i++;
+        setTimeout(feedNextLog, 1500);
+      }
+    }
+    feedNextLog();
+  </script>
+</body>
+</html>
