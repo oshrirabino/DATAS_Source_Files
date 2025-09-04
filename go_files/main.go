@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func clientHandle(req string) {
@@ -22,6 +27,24 @@ func clientHandle(req string) {
 }
 
 func main() {
-	fmt.Println("server start...")
-	runClientThread(genID(), "avltree")
+	// Context + waitgroup for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+
+	// Start server
+	os.Mkdir("fifos", 0755)
+	wg.Add(1)
+	go startServer(ctx, &wg, "9000")
+
+	// Wait for interrupt (Ctrl+C)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	<-sig
+	fmt.Println("Signal received, shutting down...")
+
+	// Cancel server context, wait for goroutines
+	cancel()
+	wg.Wait()
+	os.RemoveAll("fifos/")
+	fmt.Println("Server stopped cleanly.")
 }

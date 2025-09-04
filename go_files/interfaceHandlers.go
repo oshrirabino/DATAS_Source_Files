@@ -4,145 +4,82 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 )
 
-// Go wrapper for the C++ BTreeInterface process
-type DatasProcess struct {
-	cmd         *exec.Cmd
-	stdin       io.WriteCloser
-	programFile *os.File
-	treeLogFile *os.File
-}
+// --- Utility Functions ---
 
-// Start a new BTree process
-func NewBTreeProcess(programOut, treeLogOut, ds string) (*DatasProcess, error) {
-	// Build command: run C++ program (assume compiled to ./btreeInterface.exe)
-
-	cmd := exec.Command("./" + ds + "Interface.exe")
-
-	// Set up stdin pipe (to send commands)
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, err
-	}
-
-	// Set up pipes for stdout (program output) and stderr (tree logs)
-	stdoutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, err
-	}
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return nil, err
-	}
-
-	// Open files for logging
-	progFile, err := os.Create(programOut)
-	if err != nil {
-		return nil, err
-	}
-	logFile, err := os.Create(treeLogOut)
-	if err != nil {
-		return nil, err
-	}
-
-	// Redirect stdout → programOut file
-	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
-		for scanner.Scan() {
-			line := scanner.Text()
-			fmt.Fprintln(progFile, line)
-		}
-	}()
-
-	// Redirect stderr → treeLogOut file
-	go func() {
-		scanner := bufio.NewScanner(stderrPipe)
-		for scanner.Scan() {
-			line := scanner.Text()
-			fmt.Fprintln(logFile, line)
-		}
-	}()
-
-	// Start process
-	if err := cmd.Start(); err != nil {
-		return nil, err
-	}
-
-	return &DatasProcess{
-		cmd:         cmd,
-		stdin:       stdin,
-		programFile: progFile,
-		treeLogFile: logFile,
-	}, nil
-}
-
-// Send a command to the BTree
-func (bp *DatasProcess) SendCommand(cmd string) error {
-	_, err := fmt.Fprintln(bp.stdin, cmd)
-	return err
-}
-
-// Wait for the process to finish
-func (bp *DatasProcess) Wait() error {
-	return bp.cmd.Wait()
-}
-
-func runClientThread(ID string, ds string) {
-	progFifo := ID + "_" + ds + "_log.fifo"
-	logFifo := ID + "_" + ds + "_program.fifo"
-	if err := makeFifo(progFifo); err != nil {
-		panic(err)
-	}
-	if err := makeFifo(logFifo); err != nil {
-		panic(err)
-	}
-
-	// Output files where we want to archive the streams
+// openOutputFiles prepares files for program and log outputs
+func openOutputFiles(ID string) (*os.File, *os.File) {
 	progFile, _ := os.Create(ID + "_program_output.txt")
 	logFile, _ := os.Create(ID + "_tree_logs.txt")
-	defer progFile.Close()
-	defer logFile.Close()
+	return progFile, logFile
+}
 
-	// Start C++ program with fifo paths
+// startCppProcess starts the C++ interface with given FIFOs
+func startCppProcess(ds, progFifo, logFifo string, webSocket io.Reader) (*exec.Cmd, error) {
 	cmd := exec.Command("./"+ds+"Interface.exe",
 		"--program-out", progFifo,
 		"--tree-log-out", logFifo,
 	)
+	// For now: forward Go stdin → C++ stdin
+	cmd.Stdin = webSocket
+	return cmd, cmd.Start()
+}
 
-	// Hook stdin to our console so we can type commands interactively
-	cmd.Stdin = os.Stdin
+// forwardFifo reads from FIFO and writes into a file with optional console mirroring
+func forwardFifo(fifo string, file io.Writer, prefix string) {
+	go func() {
+		f, err := os.Open(fifo)
+		if err != nil {
+			fmt.Println("Error opening fifo:", fifo, err)
+			return
+		}
+		defer f.Close()
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Fprintln(file, prefix+":: "+line)
+			// If you want to debug, uncomment:
+			// fmt.Printf("[%s] %s\n", prefix, line)
+		}
+	}()
+}
 
-	if err := cmd.Start(); err != nil {
+// runClientThread manages one client session with its own FIFOs and process
+func runClientThread(ID string, ds string, clientSocket net.Conn) {
+	// Define fifo paths
+	progFifo := "fifos/" + ID + "_" + ds + "_program.fifo"
+	logFifo := "fifos/" + ID + "_" + ds + "_log.fifo"
+
+	// Create FIFOs
+	if err := makeFifo(progFifo); err != nil {
+		fmt.Println("panic at 1")
+		panic(err)
+	}
+	if err := makeFifo(logFifo); err != nil {
+		fmt.Println("panic at 2")
 		panic(err)
 	}
 
-	// Start goroutines to read from the FIFOs
-	go func() {
-		f, _ := os.Open(progFifo)
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			line := scanner.Text()
-			fmt.Fprintln(progFile, line)
-			// fmt.Println("[PROGRAM]", line) // also mirror to console
-		}
-	}()
+	// Prepare output files
+	// progFile, logFile := openOutputFiles(ID)
+	// defer progFile.Close()
+	// defer logFile.Close()
 
-	go func() {
-		f, _ := os.Open(logFifo)
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			line := scanner.Text()
-			fmt.Fprintln(logFile, line)
-			// fmt.Println("[TREELOG]", line) // also mirror to console
-		}
-	}()
+	// Start C++ interface
+	cmd, err := startCppProcess(ds, progFifo, logFifo, clientSocket)
+	if err != nil {
+		panic(err)
+	}
 
-	// Wait for process to finish
+	// Forward FIFO → files
+	forwardFifo(progFifo, clientSocket, "PROGRAM")
+	forwardFifo(logFifo, clientSocket, "TREELOG")
+
+	// Wait for C++ process to finish
 	if err := cmd.Wait(); err != nil {
 		fmt.Println("btree exited with:", err)
 	}
