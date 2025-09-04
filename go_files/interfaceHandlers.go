@@ -11,13 +11,6 @@ import (
 
 // --- Utility Functions ---
 
-// openOutputFiles prepares files for program and log outputs
-func openOutputFiles(ID string) (*os.File, *os.File) {
-	progFile, _ := os.Create(ID + "_program_output.txt")
-	logFile, _ := os.Create(ID + "_tree_logs.txt")
-	return progFile, logFile
-}
-
 // startCppProcess starts the C++ interface with given FIFOs
 func startCppProcess(ds, progFifo, logFifo string, webSocket io.Reader) (*exec.Cmd, error) {
 	cmd := exec.Command("./"+ds+"Interface.exe",
@@ -30,8 +23,11 @@ func startCppProcess(ds, progFifo, logFifo string, webSocket io.Reader) (*exec.C
 }
 
 // forwardFifo reads from FIFO and writes into a file with optional console mirroring
-func forwardFifo(fifo string, file io.Writer, prefix string) {
+// Returns a channel that closes when forwarding stops
+func forwardFifo(fifo string, webSocket io.Writer, prefix string) <-chan struct{} {
+	done := make(chan struct{})
 	go func() {
+		defer close(done)
 		f, err := os.Open(fifo)
 		if err != nil {
 			fmt.Println("Error opening fifo:", fifo, err)
@@ -41,46 +37,75 @@ func forwardFifo(fifo string, file io.Writer, prefix string) {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
-			fmt.Fprintln(file, prefix+":: "+line)
+			_, writeErr := fmt.Fprintln(webSocket, prefix+":: "+line)
+			if writeErr != nil {
+				fmt.Printf("Client disconnected while writing %s output\n", prefix)
+				return
+			}
 			// If you want to debug, uncomment:
 			// fmt.Printf("[%s] %s\n", prefix, line)
 		}
 	}()
+	return done
 }
 
 // runClientThread manages one client session with its own FIFOs and process
 func runClientThread(ID string, ds string, clientSocket net.Conn) {
+	fmt.Printf("[Client %s] Starting session\n", ID)
+
 	// Define fifo paths
 	progFifo := "fifos/" + ID + "_" + ds + "_program.fifo"
 	logFifo := "fifos/" + ID + "_" + ds + "_log.fifo"
 
 	// Create FIFOs
 	if err := makeFifo(progFifo); err != nil {
-		fmt.Println("panic at 1")
-		panic(err)
+		fmt.Printf("[Client %s] Error creating program FIFO: %v\n", ID, err)
+		return
 	}
 	if err := makeFifo(logFifo); err != nil {
-		fmt.Println("panic at 2")
-		panic(err)
+		fmt.Printf("[Client %s] Error creating log FIFO: %v\n", ID, err)
+		return
 	}
-
-	// Prepare output files
-	// progFile, logFile := openOutputFiles(ID)
-	// defer progFile.Close()
-	// defer logFile.Close()
 
 	// Start C++ interface
 	cmd, err := startCppProcess(ds, progFifo, logFifo, clientSocket)
 	if err != nil {
-		panic(err)
+		fmt.Printf("[Client %s] Error starting C++ process: %v\n", ID, err)
+		return
 	}
 
-	// Forward FIFO → files
-	forwardFifo(progFifo, clientSocket, "PROGRAM")
-	forwardFifo(logFifo, clientSocket, "TREELOG")
+	// Forward FIFO → client socket (now returns done channels)
+	progDone := forwardFifo(progFifo, clientSocket, "PROGRAM")
+	logDone := forwardFifo(logFifo, clientSocket, "TREELOG")
 
-	// Wait for C++ process to finish
-	if err := cmd.Wait(); err != nil {
-		fmt.Println("btree exited with:", err)
+	// Monitor both C++ process and FIFO forwarding
+	processDone := make(chan error, 1)
+	go func() {
+		processDone <- cmd.Wait()
+	}()
+
+	// Wait for ANY of these to finish
+	select {
+	case err := <-processDone:
+		if err != nil {
+			fmt.Printf("[Client %s] C++ process exited with error: %v\n", ID, err)
+		} else {
+			fmt.Printf("[Client %s] C++ process completed successfully\n", ID)
+		}
+	case <-progDone:
+		fmt.Printf("[Client %s] Program FIFO forwarding stopped (client likely disconnected)\n", ID)
+	case <-logDone:
+		fmt.Printf("[Client %s] Log FIFO forwarding stopped (client likely disconnected)\n", ID)
 	}
+
+	// Cleanup: kill process if still running
+	if cmd.Process != nil {
+		cmd.Process.Kill()
+	}
+
+	// Clean up FIFOs
+	os.Remove(progFifo)
+	os.Remove(logFifo)
+
+	fmt.Printf("[Client %s] Session ended\n", ID)
 }
