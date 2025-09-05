@@ -34,8 +34,8 @@ func main() {
 	// Start server
 	os.Mkdir("fifos", 0755)
 	wg.Add(1)
-	go startServer(ctx, &wg, "9000")
-
+	go startRawTcpServer(ctx, &wg, "9000")
+	go startHttpServer(ctx, &wg, "8080")
 	// Wait for interrupt (Ctrl+C)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)

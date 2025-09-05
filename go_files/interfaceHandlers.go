@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"os/exec"
 )
@@ -12,8 +11,9 @@ import (
 // --- Utility Functions ---
 
 // startCppProcess starts the C++ interface with given FIFOs
-func startCppProcess(ds, progFifo, logFifo string, webSocket io.Reader) (*exec.Cmd, error) {
+func startCppProcess(ds, flags, progFifo, logFifo string, webSocket io.Reader) (*exec.Cmd, error) {
 	cmd := exec.Command("./"+ds+"Interface.exe",
+		flags,
 		"--program-out", progFifo,
 		"--tree-log-out", logFifo,
 	)
@@ -50,7 +50,7 @@ func forwardFifo(fifo string, webSocket io.Writer, prefix string) <-chan struct{
 }
 
 // runClientThread manages one client session with its own FIFOs and process
-func runClientThread(ID string, ds string, clientSocket net.Conn) {
+func runClientThread(ID string, ds string, flags string, clientSocket io.ReadWriter) {
 	fmt.Printf("[Client %s] Starting session\n", ID)
 
 	// Define fifo paths
@@ -68,7 +68,7 @@ func runClientThread(ID string, ds string, clientSocket net.Conn) {
 	}
 
 	// Start C++ interface
-	cmd, err := startCppProcess(ds, progFifo, logFifo, clientSocket)
+	cmd, err := startCppProcess(ds, flags, progFifo, logFifo, clientSocket)
 	if err != nil {
 		fmt.Printf("[Client %s] Error starting C++ process: %v\n", ID, err)
 		return
