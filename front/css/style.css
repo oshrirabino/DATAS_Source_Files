@@ -267,16 +267,19 @@ button:disabled {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 500px;
+  position: relative; /* CRITICAL: Positioning context */
 }
 
 #tree-display {
-  text-align: center;
-  color: #7f8c8d;
-  font-size: 1.1rem;
+  position: relative; /* CRITICAL: Positioning context for children */
+  width: 100%;
+  height: 460px; /* CRITICAL: Fixed height for positioning calculations */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  overflow: visible; /* Allow nodes to extend beyond boundaries if needed */
+  /* REMOVED: display: flex; align-items: center; justify-content: center; */
+  /* REMOVED: text-align: center; color: #7f8c8d; font-size: 1.1rem; */
 }
 
 /* Logs */

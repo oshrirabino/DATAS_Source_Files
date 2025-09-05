@@ -20,7 +20,6 @@ class AVLTreeParser {
    * @param {string} logLine - Log line to parse
    */
   parseLog(logLine) {
-    console.log('Parsing AVL log line:', logLine);
     
     // Handle different types of logs based on actual AVL log format
     if (logLine.includes('[ROOT_CREATE]')) {
@@ -45,7 +44,7 @@ class AVLTreeParser {
    */
   parseRootCreate(line) {
     const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
-    const valueMatch = line.match(/value=(\d+)/);
+    const valueMatch = line.match(/value=(-?\d+)/); // Support negative numbers
     
     if (addressMatch && valueMatch) {
       const address = addressMatch[1];
@@ -58,8 +57,6 @@ class AVLTreeParser {
         right: null
       });
       this.rootId = address;
-      
-      console.log('Created root:', address, 'with value', value);
     }
   }
   
@@ -69,7 +66,7 @@ class AVLTreeParser {
    */
   parseNodeCreate(line) {
     const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
-    const valueMatch = line.match(/value=(\d+)/);
+    const valueMatch = line.match(/value=(-?\d+)/); // Support negative numbers
     
     if (addressMatch && valueMatch) {
       const address = addressMatch[1];
@@ -81,8 +78,6 @@ class AVLTreeParser {
         left: null,
         right: null
       });
-      
-      console.log('Created node:', address, 'with value', value);
     }
   }
   
@@ -103,7 +98,6 @@ class AVLTreeParser {
         node.right = null;
         this.nodeMap.delete(address);
         
-        console.log('Deleted node:', address);
       }
     }
   }
@@ -128,10 +122,8 @@ class AVLTreeParser {
           // Handle null pointer (0 or null)
           if (leftValue === '0' || leftValue === 'null' || leftValue === 'nullptr') {
             parentNode.left = null;
-            console.log('Set left pointer to null:', parentAddress);
           } else {
             parentNode.left = leftValue;
-            console.log('Set left pointer:', parentAddress, '->', leftValue);
           }
         }
         
@@ -140,10 +132,8 @@ class AVLTreeParser {
           // Handle null pointer (0 or null)
           if (rightValue === '0' || rightValue === 'null' || rightValue === 'nullptr') {
             parentNode.right = null;
-            console.log('Set right pointer to null:', parentAddress);
           } else {
             parentNode.right = rightValue;
-            console.log('Set right pointer:', parentAddress, '->', rightValue);
           }
         }
       }
@@ -156,7 +146,7 @@ class AVLTreeParser {
    */
   parseDataChange(line) {
     const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
-    const newValueMatch = line.match(/new_value=(\d+)/);
+    const newValueMatch = line.match(/new_value=(-?\d+)/); // Support negative numbers
     
     if (addressMatch && newValueMatch) {
       const address = addressMatch[1];
@@ -164,7 +154,6 @@ class AVLTreeParser {
       
       if (this.nodeMap.has(address)) {
         this.nodeMap.get(address).data = newValue;
-        console.log('Changed data:', address, 'to', newValue);
       }
     }
   }
@@ -179,14 +168,12 @@ class AVLTreeParser {
     if (newRootMatch) {
       const newRootId = newRootMatch[1];
       this.rootId = newRootId;
-      console.log('Root changed to:', newRootId);
     } else {
       // Also try the other format
       const newRootMatch2 = line.match(/new_root=(0x[0-9a-fA-F]+)/);
       if (newRootMatch2) {
         const newRootId = newRootMatch2[1];
         this.rootId = newRootId;
-        console.log('Root changed to:', newRootId);
       }
     }
   }
@@ -249,24 +236,20 @@ class AVLTreeParser {
     }
     
     if (!node) {
-      console.log('(empty tree)');
       return;
     }
     
     const indent = '  '.repeat(level);
-    console.log(`${indent}${node.data}`);
     
     if (node.left || node.right) {
       if (node.left && this.nodeMap.has(node.left)) {
         this.printTree(this.nodeMap.get(node.left), level + 1);
       } else {
-        console.log(`${indent}  [null]`);
       }
       
       if (node.right && this.nodeMap.has(node.right)) {
         this.printTree(this.nodeMap.get(node.right), level + 1);
       } else {
-        console.log(`${indent}  [null]`);
       }
     }
   }

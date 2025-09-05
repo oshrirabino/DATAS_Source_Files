@@ -12,10 +12,7 @@ class TreeAnimation {
    * @param {string} treeType - Type of tree: 'btree' or 'avltree'
    */
   constructor(containerId, treeType = 'btree') {
-    console.log('TreeAnimation constructor called with:', containerId, treeType);
-    
     this.container = document.getElementById(containerId);
-    console.log('Container found:', this.container);
     
     this.treeType = treeType;
     this.currentTree = null;
@@ -34,26 +31,11 @@ class TreeAnimation {
     this.nodeElements = new Map();
     
     // Parsers
-    console.log('Creating parsers...');
-    try {
-      this.btreeParser = new BTreeParser();
-      console.log('BTreeParser created:', this.btreeParser);
-    } catch (error) {
-      console.error('Failed to create BTreeParser:', error);
-    }
-    
-    try {
-      this.avlParser = new AVLTreeParser();
-      console.log('AVLTreeParser created:', this.avlParser);
-    } catch (error) {
-      console.error('Failed to create AVLTreeParser:', error);
-    }
-    
+    this.btreeParser = new BTreeParser();
+    this.avlParser = new AVLTreeParser();
     this.currentParser = treeType === 'btree' ? this.btreeParser : this.avlParser;
-    console.log('Current parser:', this.currentParser);
     
     this.initializeVisualElements();
-    console.log('TreeAnimation constructor completed');
   }
   
   /**
@@ -61,33 +43,14 @@ class TreeAnimation {
    */
   initializeVisualElements() {
     if (!this.container) {
-      console.error('Tree container not found!');
       return;
     }
     
     // Clear any existing content
     this.container.innerHTML = '';
     
-    // Create caption element
-    this.captionElement = document.createElement('div');
-    this.captionElement.className = 'tree-caption';
-    this.captionElement.style.cssText = `
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 16px;
-      font-weight: 500;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    `;
-    this.container.appendChild(this.captionElement);
+    // No caption element - no banners
+    this.captionElement = null;
     
     // Create pointer element
     this.pointerElement = document.createElement('div');
@@ -103,20 +66,9 @@ class TreeAnimation {
     `;
     this.container.appendChild(this.pointerElement);
     
-    // Set up container
-    this.container.style.cssText = `
-      position: relative;
-      min-height: 400px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `;
+    // Set up container positioning
+    this.container.style.position = 'relative';
     
-    // Add initial message
-    this.showCaption('Tree visualization ready. Connect to server to see tree operations.');
   }
   
   /**
@@ -125,181 +77,26 @@ class TreeAnimation {
    * @param {Object} data - Server data with type and message
    */
   processServerData(data) {
-    console.log('Animation processing data:', data);
+    console.log('Animation processing data:', data.type, ':', data.message);
     
-    if (data.type === 'program') {
-      this.handleProgramMessage(data.message);
-    } else if (data.type === 'log') {
-      this.handleLogMessage(data.message);
-    } else {
-      console.warn('Unknown data type:', data.type);
+    if (data.type === 'log') {
+      // Parse log data to build tree structure
+      this.currentParser.parseLog(data.message);
+      this.currentTree = this.currentParser.getRoot();
+      console.log('Current tree after parsing:', this.currentTree);
+      this.renderTree();
     }
+    // Ignore program messages - no captions needed
   }
   
   /**
-   * Handles program messages (user-friendly descriptions)
-   * 
-   * @param {string} message - Program message
-   */
-  handleProgramMessage(message) {
-    console.log('Program message:', message);
-    
-    // Show caption with the message
-    this.showCaption(message);
-    
-    // Parse the message to understand what's happening
-    if (message.includes('INSERT_SUCCESS')) {
-      this.animateInsert(message);
-    } else if (message.includes('REMOVE_SUCCESS')) {
-      this.animateRemove(message);
-    } else if (message.includes('FIND_RESULT')) {
-      this.animateFind(message);
-    } else if (message.includes('INSERT_DUPLICATE')) {
-      this.animateDuplicate(message);
-    } else if (message.includes('REMOVE_NOT_FOUND')) {
-      this.animateNotFound(message);
-    }
-  }
-  
-  /**
-   * Handles log messages (tree structure data)
-   * 
-   * @param {string} message - Log message
-   */
-  handleLogMessage(message) {
-    console.log('=== HANDLING LOG MESSAGE ===');
-    console.log('Log message:', message);
-    
-    // Store previous tree state
-    this.previousTree = this.currentTree ? this.cloneTree(this.currentTree) : null;
-    console.log('Previous tree stored:', this.previousTree);
-    
-    // Parse the log to update tree structure
-    console.log('Parsing log with parser:', this.currentParser);
-    this.currentParser.parseLog(message);
-    
-    // Get updated tree
-    this.currentTree = this.currentParser.getRoot();
-    console.log('Current tree after parsing:', this.currentTree);
-    
-    // Animate the changes
-    console.log('Calling animateTreeChanges...');
-    this.animateTreeChanges();
-    console.log('=== LOG MESSAGE HANDLED ===');
-  }
-  
-  /**
-   * Shows a caption message
-   * 
-   * @param {string} message - Message to show
+   * Shows a caption message - DISABLED
    */
   showCaption(message) {
-    console.log('showCaption called with:', message);
-    console.log('captionElement:', this.captionElement);
-    
-    if (!this.captionElement) {
-      console.error('Caption element not found!');
-      return;
-    }
-    
-    this.captionElement.textContent = message;
-    
-    // Make it more visible and add debugging - use fixed positioning
-    this.captionElement.style.cssText = `
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 0, 0, 0.9);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      z-index: 10000;
-      opacity: 1;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-      border: 3px solid yellow;
-    `;
-    
-    console.log('Caption displayed with enhanced visibility:', message);
-    console.log('Caption element computed styles:', window.getComputedStyle(this.captionElement));
-    
-    // Hide after duration
-    setTimeout(() => {
-      this.captionElement.style.opacity = '0';
-      console.log('Caption hidden');
-    }, this.captionDuration);
+    // No captions - just animations
   }
   
-  /**
-   * Animates insert operation
-   * 
-   * @param {string} message - Insert message
-   */
-  animateInsert(message) {
-    const valueMatch = message.match(/value=(\d+)/);
-    if (valueMatch) {
-      const value = valueMatch[1];
-      this.showCaption(`Inserting ${value}...`);
-    }
-  }
   
-  /**
-   * Animates remove operation
-   * 
-   * @param {string} message - Remove message
-   */
-  animateRemove(message) {
-    const valueMatch = message.match(/value=(\d+)/);
-    if (valueMatch) {
-      const value = valueMatch[1];
-      this.showCaption(`Removing ${value}...`);
-    }
-  }
-  
-  /**
-   * Animates find operation
-   * 
-   * @param {string} message - Find message
-   */
-  animateFind(message) {
-    const valueMatch = message.match(/value=(\d+)/);
-    const foundMatch = message.match(/found=(true|false)/);
-    
-    if (valueMatch && foundMatch) {
-      const value = valueMatch[1];
-      const found = foundMatch[1] === 'true';
-      this.showCaption(`Searching for ${value}... ${found ? 'Found!' : 'Not found'}`);
-    }
-  }
-  
-  /**
-   * Animates duplicate insert
-   * 
-   * @param {string} message - Duplicate message
-   */
-  animateDuplicate(message) {
-    const valueMatch = message.match(/value=(\d+)/);
-    if (valueMatch) {
-      const value = valueMatch[1];
-      this.showCaption(`Value ${value} already exists!`);
-    }
-  }
-  
-  /**
-   * Animates not found
-   * 
-   * @param {string} message - Not found message
-   */
-  animateNotFound(message) {
-    const valueMatch = message.match(/value=(\d+)/);
-    if (valueMatch) {
-      const value = valueMatch[1];
-      this.showCaption(`Value ${value} not found!`);
-    }
-  }
   
   /**
    * Animates tree structure changes
@@ -321,32 +118,25 @@ class TreeAnimation {
    * Renders the tree structure
    */
   renderTree() {
-    console.log('=== RENDERING TREE ===');
-    console.log('Rendering tree, current tree:', this.currentTree);
+    console.log('renderTree called, currentTree:', this.currentTree);
     
     // Clear existing tree
-    console.log('Clearing existing tree...');
     this.clearTree();
     
     if (!this.currentTree) {
-      console.log('No current tree to render - stopping');
+      console.log('No tree to render');
       return;
     }
     
     // Calculate tree layout
-    console.log('Calculating tree layout...');
     const layout = this.calculateTreeLayout();
-    console.log('Tree layout calculated:', layout);
+    console.log('Layout calculated:', layout);
     
     // Render nodes
-    console.log('Rendering nodes...');
     this.renderNodes(layout);
     
     // Render connections
-    console.log('Rendering connections...');
     this.renderConnections(layout);
-    
-    console.log('=== TREE RENDERING COMPLETE ===');
   }
   
   /**
@@ -355,19 +145,11 @@ class TreeAnimation {
    * @returns {Object} Layout information
    */
   calculateTreeLayout() {
-    console.log('=== CALCULATING TREE LAYOUT ===');
-    console.log('Tree type:', this.treeType);
-    console.log('Current tree:', this.currentTree);
-    
-    let layout;
     if (this.treeType === 'btree') {
-      layout = this.calculateBTreeLayout();
+      return this.calculateBTreeLayout();
     } else {
-      layout = this.calculateAVLLayout();
+      return this.calculateAVLLayout();
     }
-    
-    console.log('Layout calculated:', layout);
-    return layout;
   }
   
   /**
@@ -376,18 +158,13 @@ class TreeAnimation {
    * @returns {Object} B-Tree layout
    */
   calculateBTreeLayout() {
-    console.log('=== CALCULATING B-TREE LAYOUT ===');
     const nodes = [];
     const connections = [];
     
     if (this.currentTree) {
-      console.log('Traversing B-Tree starting from root:', this.currentTree);
       this.traverseBTree(this.currentTree, 0, 0, nodes, connections);
-    } else {
-      console.log('❌ No current tree to layout');
     }
     
-    console.log('B-Tree layout result:', { nodes: nodes.length, connections: connections.length });
     return { nodes, connections };
   }
   
@@ -397,18 +174,13 @@ class TreeAnimation {
    * @returns {Object} AVL Tree layout
    */
   calculateAVLLayout() {
-    console.log('=== CALCULATING AVL LAYOUT ===');
     const nodes = [];
     const connections = [];
     
     if (this.currentTree) {
-      console.log('Traversing AVL Tree starting from root:', this.currentTree);
       this.traverseAVLTree(this.currentTree, 0, 0, nodes, connections);
-    } else {
-      console.log('❌ No current tree to layout');
     }
     
-    console.log('AVL layout result:', { nodes: nodes.length, connections: connections.length });
     return { nodes, connections };
   }
   
@@ -422,12 +194,7 @@ class TreeAnimation {
    * @param {Array} connections - Connections array
    */
   traverseBTree(node, level, position, nodes, connections) {
-    console.log(`🌲 Traversing B-Tree node at level ${level}, position ${position}:`, node);
-    
-    if (!node) {
-      console.log('❌ Node is null/undefined');
-      return;
-    }
+    if (!node) return;
     
     const nodeInfo = {
       id: node.id,
@@ -439,24 +206,14 @@ class TreeAnimation {
       y: 0  // Will be calculated
     };
     
-    console.log('✅ Adding node to layout:', nodeInfo);
     nodes.push(nodeInfo);
     
     // Traverse children
     if (!node.isLeaf && node.children) {
-      console.log(`Node has ${node.children.length} children:`, node.children);
       node.children.forEach((childId, index) => {
-        console.log(`  Processing child ${index}: ${childId}`);
         if (childId) {
-          console.log('  Looking up child in parser nodeMap...');
-          console.log('  Current parser:', this.currentParser);
-          console.log('  Parser nodeMap size:', this.currentParser ? this.currentParser.nodeMap.size : 'N/A');
-          
           const childNode = this.currentParser.nodeMap.get(childId);
-          console.log('  Child node found:', childNode);
-          
           if (childNode) {
-            console.log('  ✅ Recursing into child node');
             this.traverseBTree(childNode, level + 1, position * 10 + index, nodes, connections);
             
             // Add connection
@@ -465,22 +222,12 @@ class TreeAnimation {
               to: childId,
               childIndex: index
             });
-            console.log('  ✅ Added connection:', { from: node.id, to: childId, childIndex: index });
-          } else {
-            console.log('  ❌ Child node not found in parser nodeMap');
           }
-        } else {
-          console.log('  ⚠️ Child ID is null/empty');
         }
       });
-    } else {
-      if (node.isLeaf) {
-        console.log('Node is a leaf - no children to traverse');
-      } else {
-        console.log('Node has no children array');
-      }
     }
   }
+
   
   /**
    * Traverses AVL Tree for layout calculation
@@ -492,12 +239,7 @@ class TreeAnimation {
    * @param {Array} connections - Connections array
    */
   traverseAVLTree(node, level, position, nodes, connections) {
-    console.log(`🌳 Traversing AVL node at level ${level}, position ${position}:`, node);
-    
-    if (!node) {
-      console.log('❌ Node is null/undefined');
-      return;
-    }
+    if (!node) return;
     
     const nodeInfo = {
       id: node.id,
@@ -508,14 +250,11 @@ class TreeAnimation {
       y: 0  // Will be calculated
     };
     
-    console.log('✅ Adding AVL node to layout:', nodeInfo);
     nodes.push(nodeInfo);
     
     // Traverse left child
     if (node.left) {
-      console.log(`  Processing left child: ${node.left}`);
       const leftNode = this.currentParser.nodeMap.get(node.left);
-      console.log('  Left node found:', leftNode);
       if (leftNode) {
         this.traverseAVLTree(leftNode, level + 1, position * 2, nodes, connections);
         connections.push({
@@ -523,19 +262,12 @@ class TreeAnimation {
           to: node.left,
           direction: 'left'
         });
-        console.log('  ✅ Added left connection');
-      } else {
-        console.log('  ❌ Left child not found in parser nodeMap');
       }
-    } else {
-      console.log('  No left child');
     }
     
     // Traverse right child
     if (node.right) {
-      console.log(`  Processing right child: ${node.right}`);
       const rightNode = this.currentParser.nodeMap.get(node.right);
-      console.log('  Right node found:', rightNode);
       if (rightNode) {
         this.traverseAVLTree(rightNode, level + 1, position * 2 + 1, nodes, connections);
         connections.push({
@@ -543,12 +275,7 @@ class TreeAnimation {
           to: node.right,
           direction: 'right'
         });
-        console.log('  ✅ Added right connection');
-      } else {
-        console.log('  ❌ Right child not found in parser nodeMap');
       }
-    } else {
-      console.log('  No right child');
     }
   }
   
@@ -558,12 +285,7 @@ class TreeAnimation {
    * @param {Object} layout - Tree layout
    */
   renderNodes(layout) {
-    console.log('=== RENDERING NODES ===');
-    console.log('Layout nodes:', layout.nodes);
-    console.log('Container dimensions:', this.container.clientWidth, 'x', this.container.clientHeight);
-    
     if (!layout.nodes || layout.nodes.length === 0) {
-      console.log('❌ No nodes to render!');
       return;
     }
     
@@ -574,26 +296,15 @@ class TreeAnimation {
     const maxLevel = Math.max(...layout.nodes.map(n => n.level));
     const levelHeight = containerHeight / (maxLevel + 2);
     
-    console.log('Rendering', layout.nodes.length, 'nodes, maxLevel:', maxLevel, 'levelHeight:', levelHeight);
-    
-    layout.nodes.forEach((node, index) => {
+    layout.nodes.forEach((node) => {
       const x = (node.position + 1) * (containerWidth / (Math.pow(2, node.level) + 1));
       const y = (node.level + 1) * levelHeight;
       
       node.x = x;
       node.y = y;
       
-      console.log(`Creating node ${index + 1}/${layout.nodes.length}:`, {
-        id: node.id,
-        keys: node.keys || node.data,
-        position: { x, y },
-        level: node.level
-      });
-      
       this.createNodeElement(node);
     });
-    
-    console.log('✅ All nodes rendered');
   }
   
   /**
@@ -602,70 +313,41 @@ class TreeAnimation {
    * @param {Object} nodeInfo - Node information
    */
   createNodeElement(nodeInfo) {
-    console.log('🔵 Creating node element for:', nodeInfo.id);
-    
     const nodeElement = document.createElement('div');
     nodeElement.className = 'tree-node';
     nodeElement.dataset.nodeId = nodeInfo.id;
     
+    // Handle negative numbers properly
     let nodeText;
     if (this.treeType === 'btree') {
       nodeText = `[${nodeInfo.keys.join(', ')}]`;
     } else {
-      nodeText = nodeInfo.data;
+      nodeText = nodeInfo.data.toString();
     }
     nodeElement.innerHTML = nodeText;
     
-    const styles = `
-      position: absolute;
-      left: ${nodeInfo.x - 30}px;
-      top: ${nodeInfo.y - 15}px;
-      width: 60px;
-      height: 30px;
-      background: #3498db;
-      color: white;
-      border-radius: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-      z-index: 10;
+    
+    nodeElement.style.cssText = `
+      position: absolute !important;
+      left: ${nodeInfo.x - 30}px !important;
+      top: ${nodeInfo.y - 15}px !important;
+      width: 60px !important;
+      height: 30px !important;
+      background: #3498db !important;
+      color: white !important;
+      border-radius: 15px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 12px !important;
+      font-weight: bold !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+      transition: all 0.3s ease !important;
+      z-index: 100 !important;
     `;
     
-    nodeElement.style.cssText = styles;
-    
-    console.log('Node element created:', {
-      id: nodeInfo.id,
-      text: nodeText,
-      position: { left: nodeInfo.x - 30, top: nodeInfo.y - 15 },
-      styles: styles
-    });
-    
-    console.log('Appending to container:', this.container);
     this.container.appendChild(nodeElement);
     this.nodeElements.set(nodeInfo.id, nodeElement);
-    
-    console.log('✅ Node element added to DOM. Container children count:', this.container.children.length);
-    
-    // Double-check the element is actually in the DOM
-    const inDom = document.body.contains(nodeElement);
-    console.log('Node element in DOM:', inDom);
-    
-    // Log the element's computed styles
-    setTimeout(() => {
-      const computedStyles = window.getComputedStyle(nodeElement);
-      console.log('Node element computed styles:', {
-        display: computedStyles.display,
-        position: computedStyles.position,
-        left: computedStyles.left,
-        top: computedStyles.top,
-        visibility: computedStyles.visibility,
-        opacity: computedStyles.opacity
-      });
-    }, 100);
   }
   
   /**

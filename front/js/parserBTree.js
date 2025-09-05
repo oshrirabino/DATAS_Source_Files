@@ -21,7 +21,6 @@ class BTreeParser {
    * @param {string} logLine - Log line to parse
    */
   parseLog(logLine) {
-    console.log('Parsing log line:', logLine);
     
     // Handle different types of logs based on C++ parser
     if (logLine.includes('[TREE_INIT]')) {
@@ -57,7 +56,6 @@ class BTreeParser {
       this.ensureNodeExists(this.rootId, true); // Initial root is typically a leaf
     }
     
-    console.log('Tree initialized: order=', this.order, 'root=', this.rootId);
   }
   
   /**
@@ -102,7 +100,6 @@ class BTreeParser {
       node.children = [];
     }
     
-    console.log('Updated node', nodeId, ':', {
       isLeaf: node.isLeaf,
       keys: node.keys,
       children: node.children
@@ -137,7 +134,6 @@ class BTreeParser {
         }
         parentNode.children[childIndex] = childId;
         
-        console.log('Set parent-child:', parentId, '[' + childIndex + '] =', childId);
       }
     }
   }
@@ -153,7 +149,6 @@ class BTreeParser {
       const newRootId = rootMatch[1];
       this.rootId = newRootId;
       this.ensureNodeExists(newRootId);
-      console.log('Root set to:', newRootId);
     }
   }
   
@@ -191,7 +186,6 @@ class BTreeParser {
         this.nodeMap.get(siblingId).keys = keysStr.split(',').map(k => parseInt(k.trim(), 10)).filter(k => !isNaN(k));
       }
       
-      console.log('Split keys: original=', originalId, 'new=', siblingId);
     }
   }
   
@@ -206,7 +200,6 @@ class BTreeParser {
       const deletedId = deletedMatch[1];
       if (this.nodeMap.has(deletedId)) {
         this.nodeMap.delete(deletedId);
-        console.log('Deleted merged node:', deletedId);
       }
     }
   }
@@ -225,7 +218,6 @@ class BTreeParser {
         keys: [],
         children: []
       });
-      console.log('Created node', nodeId, '(leaf=' + isLeaf + ')');
     }
   }
   
@@ -287,20 +279,17 @@ class BTreeParser {
     }
     
     if (!node) {
-      console.log('(empty tree)');
       return;
     }
     
     const indent = '  '.repeat(level);
     const keysStr = node.keys.join(', ');
-    console.log(`${indent}[${keysStr}]${node.isLeaf ? ' (leaf)' : ''}`);
     
     if (!node.isLeaf) {
       node.children.forEach(childId => {
         if (childId && this.nodeMap.has(childId)) {
           this.printTree(this.nodeMap.get(childId), level + 1);
         } else {
-          console.log(`${indent}  [null]`);
         }
       });
     }

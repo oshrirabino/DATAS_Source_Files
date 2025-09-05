@@ -18,7 +18,6 @@ class TreeUI {
     this.handleInsert = this.handleInsert.bind(this);
     this.handleRemove = this.handleRemove.bind(this);
     this.handleFind = this.handleFind.bind(this);
-    this.handlePrint = this.handlePrint.bind(this);
     this.handleClearLogs = this.handleClearLogs.bind(this);
     
     this.initializeUI();
@@ -35,7 +34,6 @@ class TreeUI {
     this.insertBtn = document.getElementById('insert-btn');
     this.removeBtn = document.getElementById('remove-btn');
     this.findBtn = document.getElementById('find-btn');
-    this.printBtn = document.getElementById('print-btn');
     this.clearLogsBtn = document.getElementById('clear-logs-btn');
     this.logOutput = document.getElementById('log-output');
     
@@ -43,7 +41,6 @@ class TreeUI {
     this.insertBtn.addEventListener('click', this.handleInsert);
     this.removeBtn.addEventListener('click', this.handleRemove);
     this.findBtn.addEventListener('click', this.handleFind);
-    this.printBtn.addEventListener('click', this.handlePrint);
     this.clearLogsBtn.addEventListener('click', this.handleClearLogs);
     
     // Add Enter key support for input fields
@@ -71,7 +68,7 @@ class TreeUI {
     this.isConnected = connected;
     
     // Enable/disable buttons based on connection
-    const buttons = [this.insertBtn, this.removeBtn, this.findBtn, this.printBtn];
+    const buttons = [this.insertBtn, this.removeBtn, this.findBtn];
     buttons.forEach(btn => {
       if (btn) {
         btn.disabled = !connected;
@@ -147,19 +144,6 @@ class TreeUI {
     const command = `find ${value}`;
     this.sendCommand(command);
     this.findInput.value = ''; // Clear input
-  }
-  
-  /**
-   * Handles print operation
-   */
-  handlePrint() {
-    if (!this.isConnected) {
-      this.showError('Not connected to server');
-      return;
-    }
-    
-    const command = 'print';
-    this.sendCommand(command);
   }
   
   /**
