@@ -1,12 +1,15 @@
 package main
 
 import (
+	"sync"
+
 	"github.com/gorilla/websocket"
 )
 
 // WebSocketWrapper wraps websocket.Conn to implement io.ReadWriter interface
 type WebSocketWrapper struct {
 	*websocket.Conn
+	writeMutex sync.Mutex
 }
 
 // Read implements io.Reader
@@ -28,8 +31,11 @@ func (ws *WebSocketWrapper) Read(p []byte) (int, error) {
 }
 
 // Write implements io.Writer
-// Writes data as a WebSocket text message
+// Writes data as a WebSocket text message (thread-safe)
 func (ws *WebSocketWrapper) Write(p []byte) (int, error) {
+	ws.writeMutex.Lock()
+	defer ws.writeMutex.Unlock()
+
 	err := ws.Conn.WriteMessage(websocket.TextMessage, p)
 	if err != nil {
 		return 0, err

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parser Verification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .test-pass {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .test-fail {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .test-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .tree-structure {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Parser Verification Test</h1>
+    <p>This test verifies that our JavaScript parsers work exactly like the C++ parsers.</p>
+    
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testBTreeBasic()">Test B-Tree Basic</button>
+        <button onclick="testBTreeSplit()">Test B-Tree Split</button>
+        <button onclick="testAVLBasic()">Test AVL Basic</button>
+        <button onclick="testAVLRotation()">Test AVL Rotation</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Detailed Log</h2>
+        <div id="log-output" class="log-output"></div>
+    </div>
+
+    <!-- Load the parsers -->
+    <script src="js/parserBTree.js"></script>
+    <script src="js/parserAVLTree.js"></script>
+    
+    <script>
+        let testResults = [];
+        
+        // Logging function
+        function log(message) {
+            console.log(message);
+            const logOutput = document.getElementById('log-output');
+            const logEntry = document.createElement('div');
+            logEntry.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            logOutput.appendChild(logEntry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        
+        // Test result function
+        function addTestResult(testName, passed, expected, actual, details = '') {
+            const result = {
+                name: testName,
+                passed: passed,
+                expected: expected,
+                actual: actual,
+                details: details
+            };
+            testResults.push(result);
+            displayTestResults();
+        }
+        
+        function displayTestResults() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = '';
+            
+            testResults.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.passed ? 'test-pass' : 'test-fail'}`;
+                div.innerHTML = `
+                    <strong>${result.name}:</strong> ${result.passed ? 'PASS' : 'FAIL'}<br>
+                    Expected: ${result.expected}<br>
+                    Actual: ${result.actual}<br>
+                    ${result.details ? 'Details: ' + result.details : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function clearResults() {
+            testResults = [];
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('log-output').innerHTML = '';
+        }
+        
+        // Helper functions
+        function formatTree(node, parser, level = 0) {
+            if (!node) return '(null)';
+            
+            let result = '';
+            const indent = '  '.repeat(level);
+            
+            if (parser instanceof BTreeParser) {
+                result = `${indent}[${node.keys.join(', ')}]${node.isLeaf ? ' (leaf)' : ''}\n`;
+                if (!node.isLeaf && node.children) {
+                    for (let childId of node.children) {
+                        if (childId && parser.nodeMap.has(childId)) {
+                            result += formatTree(parser.nodeMap.get(childId), parser, level + 1);
+                        } else {
+                            result += `${indent}  [null]\n`;
+                        }
+                    }
+                }
+            } else if (parser instanceof AVLTreeParser) {
+                result = `${indent}${node.data}\n`;
+                if (node.left || node.right) {
+                    if (node.left && parser.nodeMap.has(node.left)) {
+                        result += formatTree(parser.nodeMap.get(node.left), parser, level + 1);
+                    } else {
+                        result += `${indent}  [null]\n`;
+                    }
+                    if (node.right && parser.nodeMap.has(node.right)) {
+                        result += formatTree(parser.nodeMap.get(node.right), parser, level + 1);
+                    } else {
+                        result += `${indent}  [null]\n`;
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        // Test 1: B-Tree Basic Operations
+        function testBTreeBasic() {
+            log('=== Testing B-Tree Basic Operations ===');
+            
+            const parser = new BTreeParser();
+            
+            // Test logs from your logs.txt - simple insert
+            const logs = [
+                'INSERT_SUCCESS value=5 new_size=1',
+                '[TREE_INSERT] value=5 root=0x63a140872460',
+                '[NODE_STATE] ROOT_BEFORE_INSERT node=0x63a140872460 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]',
+                '[Insert Val] node=0x63a140872460 value=5',
+                '[NODE_STATE] BEFORE_INSERT node=0x63a140872460 is_leaf=true keys_count=0 children_count=0 keys=[] children=[]',
+                '[Insert Leaf] node=0x63a140872460 inserting key=5 at index=0',
+                '[NODE_STATE] AFTER_INSERT_LEAF node=0x63a140872460 is_leaf=true keys_count=1 children_count=0 keys=[5] children=[]',
+                '[TREE_INSERT_COMPLETE] value=5 root=0x63a140872460',
+                '[NODE_STATE] ROOT_AFTER_INSERT node=0x63a140872460 is_leaf=true keys_count=1 children_count=0 keys=[5] children=[]'
+            ];
+            
+            // Parse all logs
+            logs.forEach(logLine => {
+                parser.parseLog(logLine);
+            });
+            
+            // Test 1: Root should be set
+            const root = parser.getRoot();
+            const rootExists = root !== null;
+            addTestResult('B-Tree Root Exists', rootExists, 'true', rootExists.toString());
+            
+            if (root) {
+                // Test 2: Root should have correct ID
+                const correctRootId = root.id === '0x63a140872460';
+                addTestResult('B-Tree Root ID', correctRootId, '0x63a140872460', root.id);
+                
+                // Test 3: Root should be a leaf
+                const isLeaf = root.isLeaf === true;
+                addTestResult('B-Tree Root Is Leaf', isLeaf, 'true', root.isLeaf.toString());
+                
+                // Test 4: Root should have key [5]
+                const hasCorrectKey = root.keys.length === 1 && root.keys[0] === 5;
+                addTestResult('B-Tree Root Keys', hasCorrectKey, '[5]', JSON.stringify(root.keys));
+                
+                // Test 5: Root should have no children
+                const noChildren = root.children.length === 0;
+                addTestResult('B-Tree Root Children', noChildren, '[]', JSON.stringify(root.children));
+            }
+            
+            log('Tree structure:');
+            log(formatTree(root, parser));
+        }
+        
+        // Test 2: B-Tree Split Operation
+        function testBTreeSplit() {
+            log('=== Testing B-Tree Split Operation ===');
+            
+            const parser = new BTreeParser();
+            
+            // Test logs that should create a split - from your logs.txt
+            const logs = [
+                // Initial tree with 3 elements
+                '[NODE_STATE] ROOT_BEFORE_INSERT node=0x63a140872460 is_leaf=true keys_count=3 children_count=0 keys=[5,6,78] children=[]',
+                
+                // Split operation
+                '[Root Split] root=0x63a140872460 is full, creating new root',
+                '[Split Sibling] node=0x63a140872460 keys_size=3',
+                '[NODE_STATE] BEFORE_SPLIT node=0x63a140872460 is_leaf=true keys_count=3 children_count=0 keys=[5,6,78] children=[]',
+                '[Split Result] original_node=0x63a140872460 new_sibling=0x63a1408754c0 mid_val=6',
+                '[Split Keys] original_node=0x63a140872460 original_keys=[5] new_sibling=0x63a1408754c0 new_keys=[78]',
+                '[NODE_STATE] AFTER_SPLIT_ORIGINAL node=0x63a140872460 is_leaf=true keys_count=1 children_count=0 keys=[5] children=[]',
+                '[NODE_STATE] AFTER_SPLIT_NEW node=0x63a1408754c0 is_leaf=true keys_count=1 children_count=0 keys=[78] children=[]',
+                
+                // New root with children
+                '[NODE_STATE] BEFORE_INSERT node=0x63a140873d90 is_leaf=false keys_count=1 children_count=2 keys=[6] children=[0x63a140872460,0x63a1408754c0]',
+                '[TREE_INSERT_COMPLETE] value=9 root=0x63a140873d90',
+                '[NODE_STATE] ROOT_AFTER_INSERT node=0x63a140873d90 is_leaf=false keys_count=1 children_count=2 keys=[6] children=[0x63a140872460,0x63a1408754c0]'
+            ];
+            
+            // Parse all logs
+            logs.forEach(logLine => {
+                parser.parseLog(logLine);
+            });
+            
+            // Test 1: Root should be the new internal node
+            const root = parser.getRoot();
+            const correctRoot = root && root.id === '0x63a140873d90';
+            addTestResult('B-Tree Split Root', correctRoot, '0x63a140873d90', root ? root.id : 'null');
+            
+            if (root) {
+                // Test 2: Root should not be a leaf
+                const notLeaf = root.isLeaf === false;
+                addTestResult('B-Tree Split Root Not Leaf', notLeaf, 'false', root.isLeaf.toString());
+                
+                // Test 3: Root should have key [6]
+                const correctKeys = root.keys.length === 1 && root.keys[0] === 6;
+                addTestResult('B-Tree Split Root Keys', correctKeys, '[6]', JSON.stringify(root.keys));
+                
+                // Test 4: Root should have 2 children
+                const twoChildren = root.children.length === 2;
+                addTestResult('B-Tree Split Children Count', twoChildren, '2', root.children.length.toString());
+                
+                // Test 5: Left child should exist and have key [5]
+                const leftChildId = root.children[0];
+                const leftChild = leftChildId ? parser.nodeMap.get(leftChildId) : null;
+                const leftChildCorrect = leftChild && leftChild.keys.length === 1 && leftChild.keys[0] === 5;
+                addTestResult('B-Tree Split Left Child', leftChildCorrect, '[5]', leftChild ? JSON.stringify(leftChild.keys) : 'null');
+                
+                // Test 6: Right child should exist and have key [78]
+                const rightChildId = root.children[1];
+                const rightChild = rightChildId ? parser.nodeMap.get(rightChildId) : null;
+                const rightChildCorrect = rightChild && rightChild.keys.length === 1 && rightChild.keys[0] === 78;
+                addTestResult('B-Tree Split Right Child', rightChildCorrect, '[78]', rightChild ? JSON.stringify(rightChild.keys) : 'null');
+            }
+            
+            log('Tree structure after split:');
+            log(formatTree(root, parser));
+        }
+        
+        // Test 3: AVL Basic Operations
+        function testAVLBasic() {
+            log('=== Testing AVL Basic Operations ===');
+            
+            const parser = new AVLTreeParser();
+            
+            // Test logs from your logs2.txt - basic insertion
+            const logs = [
+                'INSERT_SUCCESS value=6 new_size=1',
+                '[TREE_INSERT] value=6',
+                '[ROOT_CREATE] address=0x64cd886b1d10 value=6',
+                'INSERT_SUCCESS value=7 new_size=2',
+                '[TREE_INSERT] value=7',
+                '[INSERT] node=0x64cd886b1d10 value=7 direction=right',
+                '[NODE_CREATE] address=0x64cd886b1d50 value=7',
+                '[POINTER_CHANGE] 0x64cd886b1d10.right=0x64cd886b1d50'
+            ];
+            
+            // Parse all logs
+            logs.forEach(logLine => {
+                parser.parseLog(logLine);
+            });
+            
+            // Test 1: Root should exist
+            const root = parser.getRoot();
+            const rootExists = root !== null;
+            addTestResult('AVL Root Exists', rootExists, 'true', rootExists.toString());
+            
+            if (root) {
+                // Test 2: Root should have value 6
+                const correctValue = root.data === 6;
+                addTestResult('AVL Root Value', correctValue, '6', root.data.toString());
+                
+                // Test 3: Root should have right child
+                const hasRightChild = root.right !== null;
+                addTestResult('AVL Root Has Right Child', hasRightChild, 'true', hasRightChild.toString());
+                
+                // Test 4: Right child should have value 7
+                const rightChild = root.right ? parser.nodeMap.get(root.right) : null;
+                const rightChildCorrect = rightChild && rightChild.data === 7;
+                addTestResult('AVL Right Child Value', rightChildCorrect, '7', rightChild ? rightChild.data.toString() : 'null');
+                
+                // Test 5: Should have 2 nodes total
+                const nodeCount = parser.nodeMap.size;
+                addTestResult('AVL Node Count', nodeCount === 2, '2', nodeCount.toString());
+            }
+            
+            log('Tree structure:');
+            log(formatTree(root, parser));
+        }
+        
+        // Test 4: AVL Rotation
+        function testAVLRotation() {
+            log('=== Testing AVL Rotation ===');
+            
+            const parser = new AVLTreeParser();
+            
+            // Test logs from your logs2.txt - rotation scenario
+            const logs = [
+                '[ROOT_CREATE] address=0x64cd886b1d10 value=6',
+                '[NODE_CREATE] address=0x64cd886b1d50 value=7',
+                '[POINTER_CHANGE] 0x64cd886b1d10.right=0x64cd886b1d50',
+                '[NODE_CREATE] address=0x64cd886b1f20 value=89',
+                '[POINTER_CHANGE] 0x64cd886b1d50.right=0x64cd886b1f20',
+                // Rotation happens
+                '[ROTATE_LEFT] node=0x64cd886b1d10 right=0x64cd886b1d50 right_left=0',
+                '[POINTER_CHANGE] 0x64cd886b1d10.right=0',
+                '[POINTER_CHANGE] 0x64cd886b1d50.left=0x64cd886b1d10',
+                '[ROOT_CHANGE] old=0x64cd886b1d10 new=0x64cd886b1d50'
+            ];
+            
+            // Parse all logs
+            logs.forEach(logLine => {
+                parser.parseLog(logLine);
+            });
+            
+            // Test 1: Root should change to node with value 7
+            const root = parser.getRoot();
+            const newRootCorrect = root && root.data === 7;
+            addTestResult('AVL Rotation New Root', newRootCorrect, '7', root ? root.data.toString() : 'null');
+            
+            if (root) {
+                // Test 2: New root should have left child with value 6
+                const leftChild = root.left ? parser.nodeMap.get(root.left) : null;
+                const leftChildCorrect = leftChild && leftChild.data === 6;
+                addTestResult('AVL Rotation Left Child', leftChildCorrect, '6', leftChild ? leftChild.data.toString() : 'null');
+                
+                // Test 3: New root should have right child with value 89
+                const rightChild = root.right ? parser.nodeMap.get(root.right) : null;
+                const rightChildCorrect = rightChild && rightChild.data === 89;
+                addTestResult('AVL Rotation Right Child', rightChildCorrect, '89', rightChild ? rightChild.data.toString() : 'null');
+                
+                // Test 4: Left child should have no right child (after rotation)
+                const leftChildHasNoRight = leftChild && (leftChild.right === null || leftChild.right === undefined);
+                addTestResult('AVL Rotation Left Child No Right', leftChildHasNoRight, 'null', leftChild ? String(leftChild.right) : 'null');
+            }
+            
+            log('Tree structure after rotation:');
+            log(formatTree(root, parser));
+        }
+        
+        // Run all tests
+        function runAllTests() {
+            clearResults();
+            log('Starting comprehensive parser verification...');
+            
+            testBTreeBasic();
+            testBTreeSplit();
+            testAVLBasic();
+            testAVLRotation();
+            
+            log('All tests completed!');
+            
+            // Summary
+            const totalTests = testResults.length;
+            const passedTests = testResults.filter(r => r.passed).length;
+            const failedTests = totalTests - passedTests;
+            
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = `test-result ${failedTests === 0 ? 'test-pass' : 'test-fail'}`;
+            summaryDiv.innerHTML = `
+                <strong>SUMMARY:</strong> ${passedTests}/${totalTests} tests passed<br>
+                ${failedTests === 0 ? 'All tests passed! ✅' : `${failedTests} tests failed ❌`}
+            `;
+            document.getElementById('test-results').appendChild(summaryDiv);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Parser Verification Test loaded');
+            log('Click "Run All Tests" to verify parser functionality');
+        });
+    </script>
+</body>
+</html>

@@ -40,6 +40,7 @@ func startCppProcess(ds, flags, progFifo, logFifo string, webSocket io.Reader) (
 		flags,
 		"--program-out", progFifo,
 		"--tree-log-out", logFifo,
+		"--batch",
 	)
 	// For now: forward Go stdin → C++ stdin
 	cmd.Stdin = webSocket
