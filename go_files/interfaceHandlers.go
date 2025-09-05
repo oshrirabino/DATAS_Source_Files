@@ -2,11 +2,35 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 )
+
+// Message represents a structured message to send to client
+type Message struct {
+	Type    string `json:"type"`    // "program" or "log"
+	Content string `json:"message"` // actual message content
+}
+
+// sendJSONMessage sends a structured JSON message to client
+func sendJSONMessage(writer io.Writer, msgType string, content string) error {
+	msg := Message{
+		Type:    msgType,
+		Content: content,
+	}
+
+	jsonData, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	// Add newline for message separation
+	_, err = fmt.Fprintln(writer, string(jsonData))
+	return err
+}
 
 // --- Utility Functions ---
 
@@ -22,9 +46,9 @@ func startCppProcess(ds, flags, progFifo, logFifo string, webSocket io.Reader) (
 	return cmd, cmd.Start()
 }
 
-// forwardFifo reads from FIFO and writes into a file with optional console mirroring
+// forwardFifoJSON reads from FIFO and sends structured JSON messages
 // Returns a channel that closes when forwarding stops
-func forwardFifo(fifo string, webSocket io.Writer, prefix string) <-chan struct{} {
+func forwardFifoJSON(fifo string, webSocket io.Writer, messageType string) <-chan struct{} {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -37,13 +61,13 @@ func forwardFifo(fifo string, webSocket io.Writer, prefix string) <-chan struct{
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
-			_, writeErr := fmt.Fprintln(webSocket, prefix+":: "+line)
+			writeErr := sendJSONMessage(webSocket, messageType, line)
 			if writeErr != nil {
-				fmt.Printf("Client disconnected while writing %s output\n", prefix)
+				fmt.Printf("Client disconnected while writing %s output\n", messageType)
 				return
 			}
 			// If you want to debug, uncomment:
-			// fmt.Printf("[%s] %s\n", prefix, line)
+			// fmt.Printf("[%s] %s\n", messageType, line)
 		}
 	}()
 	return done
@@ -74,9 +98,9 @@ func runClientThread(ID string, ds string, flags string, clientSocket io.ReadWri
 		return
 	}
 
-	// Forward FIFO → client socket (now returns done channels)
-	progDone := forwardFifo(progFifo, clientSocket, "PROGRAM")
-	logDone := forwardFifo(logFifo, clientSocket, "TREELOG")
+	// Forward FIFO → client socket as JSON messages
+	progDone := forwardFifoJSON(progFifo, clientSocket, "program")
+	logDone := forwardFifoJSON(logFifo, clientSocket, "log")
 
 	// Monitor both C++ process and FIFO forwarding
 	processDone := make(chan error, 1)
