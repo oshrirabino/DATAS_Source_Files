@@ -1,27 +1,29 @@
 /**
  * AVL Tree Log Parser
- * Rebuilds AVL Tree state from logs without implementing tree logic
- * Based on parseLogsAVLTree.cpp logic
  * 
- * @class AVLTreeParser
+ * Parses AVL Tree operation logs and reconstructs tree state snapshots.
+ * Based on the C++ parseLogsAVLTree.cpp implementation.
+ * 
+ * Log format examples:
+ * - [ROOT_CREATE] address=0x64cd886b1d10 value=6
+ * - [NODE_CREATE] address=0x64cd886b1d50 value=7
+ * - [POINTER_CHANGE] 0x64cd886b1d10.right=0x64cd886b1d50
+ * - [ROTATE_LEFT] node=0x64cd886b1d10 right=0x64cd886b1d50 right_left=0
+ * - [ROOT_CHANGE] old=0x64cd886b1d10 new=0x64cd886b1d50
  */
+
 class AVLTreeParser {
-  /**
-   * Creates an instance of AVLTreeParser
-   */
   constructor() {
-    this.nodeMap = new Map();
+    this.nodeMap = new Map(); // Maps address strings to node objects
     this.rootId = null;
+    this.snapshots = []; // Array of tree snapshots
   }
-  
+
   /**
-   * Parses a single log line and updates tree state
-   * 
-   * @param {string} logLine - Log line to parse
+   * Parse a single log line and update the tree state
+   * @param {string} logLine - The log line to parse
    */
-  parseLog(logLine) {
-    
-    // Handle different types of logs based on actual AVL log format
+  parseLogLine(logLine) {
     if (logLine.includes('[ROOT_CREATE]')) {
       this.parseRootCreate(logLine);
     } else if (logLine.includes('[NODE_CREATE]')) {
@@ -34,224 +36,472 @@ class AVLTreeParser {
       this.parseDataChange(logLine);
     } else if (logLine.includes('[ROOT_CHANGE]')) {
       this.parseRootChange(logLine);
+    } else if (logLine.includes('[ROTATE_LEFT]')) {
+      this.parseRotateLeft(logLine);
+    } else if (logLine.includes('[ROTATE_RIGHT]')) {
+      this.parseRotateRight(logLine);
+    } else if (logLine.includes('[INSERT]')) {
+      this.parseInsert(logLine);
+    } else if (logLine.includes('[REMOVE]')) {
+      this.parseRemove(logLine);
+    } else if (logLine.includes('[REMOVE_FOUND]')) {
+      this.parseRemoveFound(logLine);
+    } else if (logLine.includes('[FIND_PREDECESSOR]')) {
+      this.parseFindPredecessor(logLine);
+    } else if (logLine.includes('[FIND_SUCCESSOR]')) {
+      this.parseFindSuccessor(logLine);
+    } else if (logLine.includes('INIT_SUCCESS')) {
+      this.parseInitSuccess(logLine);
     }
-    // Ignore: [FIND], [TREE_FIND], [INSERT], [REMOVE], [ROTATE_*], [FIND_PREDECESSOR], etc.
   }
-  
+
   /**
-   * Parses root creation log
-   * Format: [ROOT_CREATE] address=0x... value=...
+   * Parse multiple log lines and return tree snapshots
+   * @param {string} logContent - The complete log content
+   * @returns {Array} Array of tree snapshots
+   */
+  parseLogs(logContent) {
+    // Don't reset - maintain state across calls
+    const lines = logContent.split('\n');
+    
+    for (const line of lines) {
+      if (line.trim()) {
+        this.parseLogLine(line);
+        // Create snapshot after each significant operation
+        if (this.shouldCreateSnapshot(line)) {
+          this.createSnapshot(line);
+        }
+      }
+    }
+    
+    return this.snapshots;
+  }
+
+  /**
+   * Parse a single log line incrementally (for real-time parsing)
+   * @param {string} logLine - The log line to parse
+   * @returns {Object|null} Snapshot if created, null otherwise
+   */
+  parseLogLineIncremental(logLine) {
+    if (logLine.trim()) {
+      this.parseLogLine(logLine);
+      // Create snapshot after each significant operation
+      if (this.shouldCreateSnapshot(logLine)) {
+        this.createSnapshot(logLine);
+        return this.snapshots[this.snapshots.length - 1]; // Return the latest snapshot
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Reset the parser state
+   */
+  reset() {
+    this.nodeMap.clear();
+    this.rootId = null;
+    this.snapshots = [];
+  }
+
+  /**
+   * Determine if we should create a snapshot after this log line
+   * @param {string} line - The log line
+   * @returns {boolean} True if snapshot should be created
+   */
+  shouldCreateSnapshot(line) {
+    return line.includes('[TREE_INSERT]') || 
+           line.includes('[TREE_REMOVE]') || 
+           line.includes('[TREE_FIND]') ||
+           line.includes('[TREE_FIND_RESULT]');
+  }
+
+  /**
+   * Create a snapshot of the current tree state
+   * @param {string} operation - The operation that triggered the snapshot
+   */
+  createSnapshot(operation) {
+    const snapshot = {
+      operation: this.extractOperation(operation),
+      root: this.rootId,
+      nodes: this.cloneNodeMap(),
+      timestamp: Date.now()
+    };
+    this.snapshots.push(snapshot);
+  }
+
+  /**
+   * Extract operation type from log line
+   * @param {string} line - The log line
+   * @returns {string} Operation type
+   */
+  extractOperation(line) {
+    if (line.includes('[TREE_INSERT]')) {
+      const value = this.parseValue(line, 'value=');
+      return `Insert ${value}`;
+    } else if (line.includes('[TREE_REMOVE]')) {
+      const value = this.parseValue(line, 'value=');
+      return `Remove ${value}`;
+    } else if (line.includes('[TREE_FIND]')) {
+      const value = this.parseValue(line, 'value=');
+      return `Find ${value}`;
+    } else if (line.includes('[TREE_FIND_RESULT]')) {
+      const value = this.parseValue(line, 'value=');
+      const found = line.includes('found=true');
+      return `Find ${value} (${found ? 'found' : 'not found'})`;
+    }
+    return 'Unknown operation';
+  }
+
+  /**
+   * Clone the current node map for snapshot
+   * @returns {Map} Cloned node map
+   */
+  cloneNodeMap() {
+    const cloned = new Map();
+    for (const [address, node] of this.nodeMap) {
+      cloned.set(address, {
+        address: node.address,
+        value: node.value,
+        left: node.left,
+        right: node.right
+      });
+    }
+    return cloned;
+  }
+
+  /**
+   * Parse initialization success log
+   * @param {string} line - The log line
+   */
+  parseInitSuccess(line) {
+    // AVL trees don't have order, just type
+    // Line format: INIT_SUCCESS type=AVL size=0
+  }
+
+  /**
+   * Parse root creation log
+   * @param {string} line - The log line
    */
   parseRootCreate(line) {
-    const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
-    const valueMatch = line.match(/value=(-?\d+)/); // Support negative numbers
+    const address = this.parseAddress(line);
+    const value = this.parseValue(line, 'value=');
     
-    if (addressMatch && valueMatch) {
-      const address = addressMatch[1];
-      const value = parseInt(valueMatch[1], 10);
-      
+    if (address) {
       this.nodeMap.set(address, {
-        id: address,
-        data: value,
+        address: address,
+        value: value,
         left: null,
         right: null
       });
       this.rootId = address;
     }
   }
-  
+
   /**
-   * Parses node creation log
-   * Format: [NODE_CREATE] address=0x... value=...
+   * Parse node creation log
+   * @param {string} line - The log line
    */
   parseNodeCreate(line) {
-    const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
-    const valueMatch = line.match(/value=(-?\d+)/); // Support negative numbers
+    const address = this.parseAddress(line);
+    const value = this.parseValue(line, 'value=');
     
-    if (addressMatch && valueMatch) {
-      const address = addressMatch[1];
-      const value = parseInt(valueMatch[1], 10);
-      
+    if (address) {
       this.nodeMap.set(address, {
-        id: address,
-        data: value,
+        address: address,
+        value: value,
         left: null,
         right: null
       });
     }
   }
-  
+
   /**
-   * Parses node deletion log
-   * Format: [NODE_DELETE] address=0x... value=... type=...
+   * Parse node deletion log
+   * @param {string} line - The log line
    */
   parseNodeDelete(line) {
-    const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
+    const address = this.parseAddress(line);
     
-    if (addressMatch) {
-      const address = addressMatch[1];
-      
-      if (this.nodeMap.has(address)) {
-        // Set children to null to prevent cascade deletion
-        const node = this.nodeMap.get(address);
-        node.left = null;
-        node.right = null;
-        this.nodeMap.delete(address);
-        
-      }
+    if (address && this.nodeMap.has(address)) {
+      this.nodeMap.delete(address);
     }
   }
-  
+
   /**
-   * Parses pointer change log
-   * Format: [POINTER_CHANGE] 0x....left=0x... or [POINTER_CHANGE] 0x....right=0x...
+   * Parse pointer change log
+   * @param {string} line - The log line
    */
   parsePointerChange(line) {
-    const addressMatch = line.match(/0x[0-9a-fA-F]+/);
-    const leftMatch = line.match(/\.left=([0x0-9a-fA-F]+|0)/);
-    const rightMatch = line.match(/\.right=([0x0-9a-fA-F]+|0)/);
+    // Format: [POINTER_CHANGE] 0x....left=0x... or [POINTER_CHANGE] 0x....right=0x...
     
-    if (addressMatch) {
-      const parentAddress = addressMatch[0];
-      
-      if (this.nodeMap.has(parentAddress)) {
-        const parentNode = this.nodeMap.get(parentAddress);
-        
-        if (leftMatch) {
-          const leftValue = leftMatch[1];
-          // Handle null pointer (0 or null)
-          if (leftValue === '0' || leftValue === 'null' || leftValue === 'nullptr') {
-            parentNode.left = null;
-          } else {
-            parentNode.left = leftValue;
-          }
-        }
-        
-        if (rightMatch) {
-          const rightValue = rightMatch[1];
-          // Handle null pointer (0 or null)
-          if (rightValue === '0' || rightValue === 'null' || rightValue === 'nullptr') {
-            parentNode.right = null;
-          } else {
-            parentNode.right = rightValue;
-          }
-        }
+    // Find the parent address (before the dot)
+    const start = line.indexOf('0x');
+    if (start === -1) return;
+    
+    const dotPos = line.indexOf('.', start);
+    if (dotPos === -1) return;
+    
+    const parentStr = line.substring(start, dotPos);
+    const parentAddr = parentStr;
+    
+    // Determine if it's left or right
+    const isLeft = line.includes('.left=');
+    
+    // Find the child address (after the equals)
+    const eqPos = line.indexOf('=', dotPos);
+    if (eqPos === -1) return;
+    
+    const childAddr = this.parseAddress(line.substring(eqPos + 1));
+    
+    if (this.nodeMap.has(parentAddr)) {
+      const parentNode = this.nodeMap.get(parentAddr);
+      if (isLeft) {
+        parentNode.left = childAddr;
+      } else {
+        parentNode.right = childAddr;
       }
     }
   }
-  
+
   /**
-   * Parses data change log
-   * Format: [DATA_CHANGE] address=0x... old_value=... new_value=...
+   * Parse data change log
+   * @param {string} line - The log line
    */
   parseDataChange(line) {
-    const addressMatch = line.match(/address=(0x[0-9a-fA-F]+)/);
-    const newValueMatch = line.match(/new_value=(-?\d+)/); // Support negative numbers
+    const address = this.parseAddress(line);
+    const newValue = this.parseValue(line, 'new_value=');
     
-    if (addressMatch && newValueMatch) {
-      const address = addressMatch[1];
-      const newValue = parseInt(newValueMatch[1], 10);
-      
-      if (this.nodeMap.has(address)) {
-        this.nodeMap.get(address).data = newValue;
-      }
+    if (address && this.nodeMap.has(address)) {
+      this.nodeMap.get(address).value = newValue;
     }
   }
-  
+
   /**
-   * Parses root change log
-   * Format: [ROOT_CHANGE] old=0x... new=0x...
+   * Parse root change log
+   * @param {string} line - The log line
    */
   parseRootChange(line) {
-    const newRootMatch = line.match(/new=(0x[0-9a-fA-F]+)/);
-    
-    if (newRootMatch) {
-      const newRootId = newRootMatch[1];
-      this.rootId = newRootId;
-    } else {
-      // Also try the other format
-      const newRootMatch2 = line.match(/new_root=(0x[0-9a-fA-F]+)/);
-      if (newRootMatch2) {
-        const newRootId = newRootMatch2[1];
-        this.rootId = newRootId;
-      }
+    const newRoot = this.parseAddress(line, 'new=');
+    if (newRoot) {
+      this.rootId = newRoot;
     }
   }
-  
+
   /**
-   * Gets the root node of the tree
-   * 
-   * @returns {Object|null} Root node or null if no root
+   * Parse address from log line
+   * @param {string} line - The log line
+   * @param {string} prefix - Optional prefix to search for
+   * @returns {string|null} Parsed address or null
    */
-  getRoot() {
-    return this.rootId ? this.nodeMap.get(this.rootId) : null;
-  }
-  
-  /**
-   * Gets all nodes in the tree
-   * 
-   * @returns {Map} Map of all nodes
-   */
-  getAllNodes() {
-    return this.nodeMap;
-  }
-  
-  /**
-   * Clones a tree node recursively
-   * 
-   * @param {Object} node - Node to clone
-   * @returns {Object} Cloned node
-   */
-  cloneTree(node) {
-    if (!node) return null;
+  parseAddress(line, prefix = 'address=') {
+    let pos = line.indexOf(prefix);
+    if (pos === -1) {
+      // Try to find 0x directly
+      pos = line.indexOf('0x');
+      if (pos === -1) return null;
+    } else {
+      pos = line.indexOf('0x', pos);
+      if (pos === -1) return null;
+    }
+
+    const end = line.indexOf(' ', pos);
+    const end2 = line.indexOf(')', pos);
+    const end3 = line.indexOf('=', pos);
+    const end4 = line.indexOf('\n', pos);
     
-    const cloned = {
-      id: node.id,
-      data: node.data,
+    let actualEnd = line.length;
+    if (end !== -1) actualEnd = Math.min(actualEnd, end);
+    if (end2 !== -1) actualEnd = Math.min(actualEnd, end2);
+    if (end3 !== -1) actualEnd = Math.min(actualEnd, end3);
+    if (end4 !== -1) actualEnd = Math.min(actualEnd, end4);
+
+    return line.substring(pos, actualEnd);
+  }
+
+  /**
+   * Parse integer value from log line
+   * @param {string} line - The log line
+   * @param {string} prefix - The prefix to search for
+   * @returns {number} Parsed value
+   */
+  parseValue(line, prefix) {
+    const pos = line.indexOf(prefix);
+    if (pos === -1) return 0;
+
+    const start = pos + prefix.length;
+    const end = line.indexOf(' ', start);
+    const end2 = line.indexOf('\n', start);
+    
+    let actualEnd = line.length;
+    if (end !== -1) actualEnd = Math.min(actualEnd, end);
+    if (end2 !== -1) actualEnd = Math.min(actualEnd, end2);
+
+    const valueStr = line.substring(start, actualEnd);
+    return parseInt(valueStr, 10) || 0;
+  }
+
+  /**
+   * Get the current tree structure as a hierarchical object
+   * @returns {Object|null} Tree structure or null if empty
+   */
+  getTreeStructure() {
+    if (!this.rootId || !this.nodeMap.has(this.rootId)) {
+      return null;
+    }
+
+    return this.buildNodeStructure(this.rootId);
+  }
+
+  /**
+   * Build node structure recursively
+   * @param {string} address - Node address
+   * @returns {Object} Node structure
+   */
+  buildNodeStructure(address) {
+    if (!address || !this.nodeMap.has(address)) {
+      return null;
+    }
+
+    const node = this.nodeMap.get(address);
+    const structure = {
+      address: address,
+      value: node.value,
       left: null,
       right: null
     };
-    
-    // Clone children recursively
-    if (node.left && this.nodeMap.has(node.left)) {
-      cloned.left = this.cloneTree(this.nodeMap.get(node.left));
+
+    if (node.left) {
+      structure.left = this.buildNodeStructure(node.left);
     }
-    
-    if (node.right && this.nodeMap.has(node.right)) {
-      cloned.right = this.cloneTree(this.nodeMap.get(node.right));
+    if (node.right) {
+      structure.right = this.buildNodeStructure(node.right);
     }
-    
-    return cloned;
+
+    return structure;
   }
-  
+
   /**
-   * Prints the tree structure for debugging
-   * 
-   * @param {Object} node - Node to print (defaults to root)
-   * @param {number} level - Current level (for indentation)
+   * Get inorder traversal of the tree
+   * @returns {Array<number>} Array of values in inorder
    */
-  printTree(node = null, level = 0) {
-    if (node === null) {
-      node = this.getRoot();
-    }
-    
-    if (!node) {
+  getInorderTraversal() {
+    const result = [];
+    this.inorderTraversal(this.rootId, result);
+    return result;
+  }
+
+  /**
+   * Perform inorder traversal recursively
+   * @param {string} address - Current node address
+   * @param {Array<number>} result - Result array to populate
+   */
+  inorderTraversal(address, result) {
+    if (!address || !this.nodeMap.has(address)) {
       return;
     }
+
+    const node = this.nodeMap.get(address);
     
-    const indent = '  '.repeat(level);
-    
-    if (node.left || node.right) {
-      if (node.left && this.nodeMap.has(node.left)) {
-        this.printTree(this.nodeMap.get(node.left), level + 1);
-      } else {
-      }
-      
-      if (node.right && this.nodeMap.has(node.right)) {
-        this.printTree(this.nodeMap.get(node.right), level + 1);
-      } else {
-      }
+    // Visit left subtree
+    if (node.left) {
+      this.inorderTraversal(node.left, result);
     }
+    
+    // Visit current node
+    result.push(node.value);
+    
+    // Visit right subtree
+    if (node.right) {
+      this.inorderTraversal(node.right, result);
+    }
+  }
+
+  /**
+   * Calculate tree height
+   * @returns {number} Tree height
+   */
+  getTreeHeight() {
+    return this.calculateHeight(this.rootId);
+  }
+
+  /**
+   * Calculate height recursively
+   * @param {string} address - Node address
+   * @returns {number} Height of subtree
+   */
+  calculateHeight(address) {
+    if (!address || !this.nodeMap.has(address)) {
+      return 0;
+    }
+
+    const node = this.nodeMap.get(address);
+    const leftHeight = node.left ? this.calculateHeight(node.left) : 0;
+    const rightHeight = node.right ? this.calculateHeight(node.right) : 0;
+    
+    return 1 + Math.max(leftHeight, rightHeight);
+  }
+
+  /**
+   * Parse rotation left log
+   * @param {string} line - The log line
+   */
+  parseRotateLeft(line) {
+    // Format: [ROTATE_LEFT] node=0x... right=0x... right_left=0x...
+    // This is informational - the actual pointer changes are in POINTER_CHANGE logs
+  }
+
+  /**
+   * Parse rotation right log
+   * @param {string} line - The log line
+   */
+  parseRotateRight(line) {
+    // Format: [ROTATE_RIGHT] node=0x... left=0x... left_right=0x...
+    // This is informational - the actual pointer changes are in POINTER_CHANGE logs
+  }
+
+  /**
+   * Parse insert log (tracks insertion path)
+   * @param {string} line - The log line
+   */
+  parseInsert(line) {
+    // Format: [INSERT] node=0x... value=X direction=left/right
+    // This is informational - actual node creation is in NODE_CREATE
+  }
+
+  /**
+   * Parse remove log (tracks removal path)
+   * @param {string} line - The log line
+   */
+  parseRemove(line) {
+    // Format: [REMOVE] node=0x... searching=X
+    // This is informational - actual removal is in NODE_DELETE
+  }
+
+  /**
+   * Parse remove found log
+   * @param {string} line - The log line
+   */
+  parseRemoveFound(line) {
+    // Format: [REMOVE_FOUND] node=0x... value=X
+    // This is informational - actual removal is in NODE_DELETE
+  }
+
+  /**
+   * Parse find predecessor log
+   * @param {string} line - The log line
+   */
+  parseFindPredecessor(line) {
+    // Format: [FIND_PREDECESSOR] start=0x... result=0x... depth=X
+    // This is informational - used for finding replacement nodes
+  }
+
+  /**
+   * Parse find successor log
+   * @param {string} line - The log line
+   */
+  parseFindSuccessor(line) {
+    // Format: [FIND_SUCCESSOR] start=0x... result=0x... depth=X
+    // This is informational - used for finding replacement nodes
   }
 }
 
