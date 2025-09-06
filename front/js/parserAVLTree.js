@@ -17,6 +17,7 @@ class AVLTreeParser {
     this.nodeMap = new Map(); // Maps address strings to node objects
     this.rootId = null;
     this.snapshots = []; // Array of tree snapshots
+    this.currentOperation = null; // Track current operation context
   }
 
   /**
@@ -24,6 +25,19 @@ class AVLTreeParser {
    * @param {string} logLine - The log line to parse
    */
   parseLogLine(logLine) {
+    // Track operation context
+    if (logLine.includes('[TREE_INSERT]')) {
+      const value = this.parseValue(logLine, 'value=');
+      this.currentOperation = `Insert ${value}`;
+    } else if (logLine.includes('[TREE_REMOVE]')) {
+      const value = this.parseValue(logLine, 'value=');
+      this.currentOperation = `Remove ${value}`;
+    } else if (logLine.includes('[TREE_FIND]')) {
+      const value = this.parseValue(logLine, 'value=');
+      this.currentOperation = `Find ${value}`;
+    }
+    
+    // Parse the actual log
     if (logLine.includes('[ROOT_CREATE]')) {
       this.parseRootCreate(logLine);
     } else if (logLine.includes('[NODE_CREATE]')) {
@@ -101,6 +115,7 @@ class AVLTreeParser {
     this.nodeMap.clear();
     this.rootId = null;
     this.snapshots = [];
+    this.currentOperation = null;
   }
 
   /**
@@ -109,9 +124,12 @@ class AVLTreeParser {
    * @returns {boolean} True if snapshot should be created
    */
   shouldCreateSnapshot(line) {
-    return line.includes('[TREE_INSERT]') || 
-           line.includes('[TREE_REMOVE]') || 
-           line.includes('[TREE_FIND]') ||
+    // Create snapshots for EVERY structural change to show all intermediate states
+    return line.includes('[ROOT_CREATE]') || 
+           line.includes('[NODE_CREATE]') ||
+           line.includes('[POINTER_CHANGE]') ||
+           line.includes('[ROOT_CHANGE]') ||
+           line.includes('[NODE_DELETE]') ||
            line.includes('[TREE_FIND_RESULT]');
   }
 
@@ -135,15 +153,20 @@ class AVLTreeParser {
    * @returns {string} Operation type
    */
   extractOperation(line) {
-    if (line.includes('[TREE_INSERT]')) {
+    // Use the tracked operation context
+    if (this.currentOperation) {
+      return this.currentOperation;
+    }
+    
+    // Fallback for operations without context
+    if (line.includes('[ROOT_CREATE]')) {
       const value = this.parseValue(line, 'value=');
       return `Insert ${value}`;
-    } else if (line.includes('[TREE_REMOVE]')) {
+    } else if (line.includes('[ROOT_CHANGE]')) {
+      return 'Tree Rebalance';
+    } else if (line.includes('[NODE_DELETE]')) {
       const value = this.parseValue(line, 'value=');
       return `Remove ${value}`;
-    } else if (line.includes('[TREE_FIND]')) {
-      const value = this.parseValue(line, 'value=');
-      return `Find ${value}`;
     } else if (line.includes('[TREE_FIND_RESULT]')) {
       const value = this.parseValue(line, 'value=');
       const found = line.includes('found=true');

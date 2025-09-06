@@ -115,9 +115,13 @@ class BTreeParser {
    * @returns {boolean} True if snapshot should be created
    */
   shouldCreateSnapshot(line) {
-    return line.includes('[TREE_INSERT_COMPLETE]') || 
+    // Create snapshots for EVERY structural change to show all intermediate states
+    return line.includes('[NODE_STATE]') || 
+           line.includes('[Split Keys]') ||
+           line.includes('[TREE_INSERT_COMPLETE]') || 
            line.includes('[TREE_REMOVE_COMPLETE]') || 
-           line.includes('[TREE_FIND_RESULT]');
+           line.includes('[TREE_FIND_RESULT]') ||
+           line.includes('[Merge Result]');
   }
 
   /**
