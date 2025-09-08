@@ -37,6 +37,24 @@ class TreeUI {
     this.clearLogsBtn = document.getElementById('clear-logs-btn');
     this.logOutput = document.getElementById('log-output');
     
+    // Validate required elements
+    const requiredElements = [
+      { element: this.insertInput, name: 'insert-value' },
+      { element: this.removeInput, name: 'remove-value' },
+      { element: this.findInput, name: 'find-value' },
+      { element: this.insertBtn, name: 'insert-btn' },
+      { element: this.removeBtn, name: 'remove-btn' },
+      { element: this.findBtn, name: 'find-btn' },
+      { element: this.clearLogsBtn, name: 'clear-logs-btn' },
+      { element: this.logOutput, name: 'log-output' }
+    ];
+    
+    const missingElements = requiredElements.filter(item => !item.element);
+    if (missingElements.length > 0) {
+      const missingNames = missingElements.map(item => item.name).join(', ');
+      throw new Error(`Required UI elements not found: ${missingNames}`);
+    }
+    
     // Add event listeners
     this.insertBtn.addEventListener('click', this.handleInsert);
     this.removeBtn.addEventListener('click', this.handleRemove);

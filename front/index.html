@@ -1,72 +1,459 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-
-    ">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tree Visualization</title>
+    <title>Tree Visualization 2.0</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Custom styles for 2.0 layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .dashboard {
+            width: 350px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .animation-area {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .dashboard h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .tree-type-indicator {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tree-type-indicator.btree {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tree-type-indicator.avltree {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .tree-type-indicator.disconnected {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .session-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .tree-type-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .tree-type-selector label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        
+        .tree-type-selector select {
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tree-type-selector select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .start-session-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .start-session-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .start-session-btn.primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .start-session-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .operations-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .operations-section h3 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .operation-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .operation-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .operation-item label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        
+        .operation-item input {
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .operation-item input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .operation-item input:disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .operation-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .operation-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .insert-btn {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+        
+        .insert-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(86, 171, 47, 0.4);
+        }
+        
+        .remove-btn {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+        
+        .remove-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 65, 108, 0.4);
+        }
+        
+        .find-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .find-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+        
+        .utility-section {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+        
+        .utility-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #6c757d;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .utility-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        .animation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .animation-header h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .tree-display-container {
+            flex: 1;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: visible;
+            min-height: 500px;
+            padding: 20px;
+        }
+        
+        .logs-section {
+            margin-top: 20px;
+        }
+        
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .logs-header h3 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .toggle-logs-btn {
+            padding: 6px 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            background: white;
+            color: #2c3e50;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-logs-btn:hover {
+            background: #f8f9fa;
+            border-color: #3498db;
+        }
+        
+        .log-output {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            transition: all 0.3s ease;
+        }
+        
+        .log-output.collapsed {
+            display: none;
+        }
+        
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 2px 0;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-entry.user-command {
+            background-color: #34495e;
+            color: #ecf0f1;
+            font-weight: 500;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .dashboard {
+                width: 100%;
+            }
+            
+            .animation-area {
+                min-height: 500px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .dashboard, .animation-area {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Tree Visualization</h1>
-            <div class="status">
-                <span id="connection-status">Disconnected</span>
+    <div class="app-container">
+        <!-- Left Dashboard -->
+        <div class="dashboard">
+            <h2>Tree Operations</h2>
+            
+            <!-- Tree Type Indicator -->
+            <div id="tree-type-indicator" class="tree-type-indicator disconnected">
+                Select Tree Type
             </div>
-        </header>
-        
-        <main>
-            <div class="controls">
-                <div class="tree-type-selection">
-                    <label for="tree-type">Tree Type:</label>
+            
+            <!-- Session Controls -->
+            <div class="session-controls">
+                <div class="tree-type-selector">
+                    <label for="tree-type">Choose Tree Type:</label>
                     <select id="tree-type">
                         <option value="btree">B-Tree</option>
                         <option value="avltree">AVL Tree</option>
                     </select>
                 </div>
-                <button id="connect-btn">Connect</button>
-                <button id="disconnect-btn" disabled>Disconnect</button>
+                <button id="start-session-btn" class="start-session-btn primary">
+                    Start Session
+                </button>
             </div>
             
-            <div class="tree-operations">
+            <!-- Operations Section -->
+            <div class="operations-section">
                 <h3>Tree Operations</h3>
                 <div class="operation-group">
                     <div class="operation-item">
-                        <label for="insert-value">Insert:</label>
+                        <label for="insert-value">Insert Value:</label>
                         <input type="number" id="insert-value" placeholder="Enter integer" disabled>
-                        <button id="insert-btn" disabled>Insert</button>
+                        <button id="insert-btn" class="operation-btn insert-btn" disabled>Insert</button>
                     </div>
                     <div class="operation-item">
-                        <label for="remove-value">Remove:</label>
+                        <label for="remove-value">Remove Value:</label>
                         <input type="number" id="remove-value" placeholder="Enter integer" disabled>
-                        <button id="remove-btn" disabled>Remove</button>
+                        <button id="remove-btn" class="operation-btn remove-btn" disabled>Remove</button>
                     </div>
                     <div class="operation-item">
-                        <label for="find-value">Find:</label>
+                        <label for="find-value">Find Value:</label>
                         <input type="number" id="find-value" placeholder="Enter integer" disabled>
-                        <button id="find-btn" disabled>Find</button>
+                        <button id="find-btn" class="operation-btn find-btn" disabled>Find</button>
                     </div>
                 </div>
-                <div class="utility-buttons">
-                    <button id="clear-logs-btn">Clear Logs</button>
-                    <button id="play-animation-btn" disabled>Play Animation</button>
-                    <button id="pause-animation-btn" disabled>Pause</button>
-                    <button id="reset-tree-btn" disabled>Reset Tree</button>
+            </div>
+            
+            <!-- Utility Section -->
+            <div class="utility-section">
+                <button id="clear-logs-btn" class="utility-btn">Clear Logs</button>
+                <button id="reset-tree-btn" class="utility-btn" disabled style="margin-top: 8px;">Reset Tree</button>
+            </div>
+        </div>
+        
+        <!-- Right Animation Area -->
+        <div class="animation-area">
+            <div class="animation-header">
+                <h2>Tree Visualization</h2>
+            </div>
+            
+            <div id="tree-display" class="tree-display-container">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #7f8c8d; font-size: 1.1rem; text-align: center;">
+                    <p>Select a tree type and start a session to begin</p>
                 </div>
             </div>
             
-            <div class="tree-container">
-                <div id="tree-display">
-                    <p>Tree visualization will appear here</p>
+            <div class="logs-section">
+                <div class="logs-header">
+                    <h3>Server Messages</h3>
+                    <button id="toggle-logs-btn" class="toggle-logs-btn">Show Logs</button>
                 </div>
+                <div id="log-output" class="log-output collapsed"></div>
             </div>
-            
-            <div class="logs">
-                <h3>Server Messages</h3>
-                <div id="log-output"></div>
-            </div>
-        </main>
+        </div>
     </div>
     
     <script src="js/communication.js"></script>
@@ -76,44 +463,103 @@
     <script src="js/animation.js"></script>
     <script>
         // Initialize the application
-        
-        
-        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            const connectBtn = document.getElementById('connect-btn');
-            const disconnectBtn = document.getElementById('disconnect-btn');
-            const statusSpan = document.getElementById('connection-status');
+            const startSessionBtn = document.getElementById('start-session-btn');
+            const treeTypeSelect = document.getElementById('tree-type');
+            const treeTypeIndicator = document.getElementById('tree-type-indicator');
             const logOutput = document.getElementById('log-output');
+            const resetTreeBtn = document.getElementById('reset-tree-btn');
+            const toggleLogsBtn = document.getElementById('toggle-logs-btn');
             
-            // Connect button handler
-            connectBtn.addEventListener('click', function() {
-                if (window.treeCommunication) {
-                    const treeType = document.getElementById('tree-type').value;
-                    window.treeCommunication.connect('/session', treeType);
-                }
-            });
+            let isSessionActive = false;
+            let currentTreeType = 'btree';
             
-            // Disconnect button handler
-            disconnectBtn.addEventListener('click', function() {
-                if (window.treeCommunication) {
-                    window.treeCommunication.disconnect();
-                }
-            });
-            
-            // Update UI based on connection status
-            function updateConnectionStatus(connected) {
-                if (connected) {
-                    statusSpan.textContent = 'Connected';
-                    statusSpan.className = 'connected';
-                    connectBtn.disabled = true;
-                    disconnectBtn.disabled = false;
+            // Update tree type indicator
+            function updateTreeTypeIndicator(treeType, connected = false) {
+                if (!connected) {
+                    treeTypeIndicator.textContent = 'Select Tree Type';
+                    treeTypeIndicator.className = 'tree-type-indicator disconnected';
                 } else {
-                    statusSpan.textContent = 'Disconnected';
-                    statusSpan.className = 'disconnected';
-                    connectBtn.disabled = false;
-                    disconnectBtn.disabled = true;
+                    treeTypeIndicator.textContent = treeType === 'btree' ? 'B-Tree' : 'AVL Tree';
+                    treeTypeIndicator.className = `tree-type-indicator ${treeType}`;
                 }
             }
+            
+            // Update UI state based on session status
+            function updateUIState(active) {
+                isSessionActive = active;
+                
+                // Update button states
+                const operationButtons = ['insert-btn', 'remove-btn', 'find-btn'];
+                const operationInputs = ['insert-value', 'remove-value', 'find-value'];
+                
+                operationButtons.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.disabled = !active;
+                    }
+                });
+                
+                operationInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.disabled = !active;
+                    }
+                });
+                
+                resetTreeBtn.disabled = !active;
+                startSessionBtn.disabled = false; // Always allow starting new session
+                
+                // Update start session button text
+                if (active) {
+                    startSessionBtn.textContent = 'Start New Session';
+                } else {
+                    startSessionBtn.textContent = 'Start Session';
+                }
+                
+                // Update tree type indicator
+                updateTreeTypeIndicator(currentTreeType, active);
+            }
+            
+            // Start session handler
+            startSessionBtn.addEventListener('click', function() {
+                if (window.treeCommunication) {
+                    currentTreeType = treeTypeSelect.value;
+                    
+                    // Update log accumulator tree type
+                    if (window.logAccumulator) {
+                        window.logAccumulator.setTreeType(currentTreeType);
+                    }
+                    
+                    // If already connected, disconnect first
+                    if (window.treeCommunication.getConnectionStatus()) {
+                        window.treeCommunication.disconnect();
+                    }
+                    
+                    // Start new session
+                    window.treeCommunication.connect('/session', currentTreeType);
+                }
+            });
+            
+            // Tree type change handler
+            treeTypeSelect.addEventListener('change', function() {
+                currentTreeType = this.value;
+                
+                // Update log accumulator tree type
+                if (window.logAccumulator) {
+                    window.logAccumulator.setTreeType(currentTreeType);
+                }
+                
+                // If session is active, restart with new tree type
+                if (isSessionActive && window.treeCommunication) {
+                    window.treeCommunication.disconnect();
+                    setTimeout(() => {
+                        window.treeCommunication.connect('/session', currentTreeType);
+                    }, 100);
+                } else {
+                    updateTreeTypeIndicator(currentTreeType, false);
+                }
+            });
             
             // Log message to UI
             function logToUI(message) {
@@ -124,15 +570,20 @@
                 logOutput.scrollTop = logOutput.scrollHeight;
             }
             
-            // Test if classes are available
-            console.log('Checking parser classes...');
-            console.log('BTreeParser available:', typeof BTreeParser);
-            console.log('AVLTreeParser available:', typeof AVLTreeParser);
-            console.log('TreeAnimator available:', typeof TreeAnimator);
-            
             // Initialize parsers and animation system
             try {
                 console.log('Initializing tree system...');
+                
+                // Check if required classes are available
+                if (typeof BTreeParser === 'undefined') {
+                    throw new Error('BTreeParser class not found');
+                }
+                if (typeof AVLTreeParser === 'undefined') {
+                    throw new Error('AVLTreeParser class not found');
+                }
+                if (typeof TreeAnimator === 'undefined') {
+                    throw new Error('TreeAnimator class not found');
+                }
                 
                 // Initialize parsers
                 window.btreeParser = new BTreeParser();
@@ -154,7 +605,6 @@
                     },
                     
                     parseLogs: function() {
-                        // Parse only the latest log line incrementally
                         if (this.logs.length === 0) {
                             return [];
                         }
@@ -181,7 +631,7 @@
                     
                     setTreeType: function(treeType) {
                         this.currentTreeType = treeType;
-                        this.logs = []; // Clear logs when switching tree types
+                        this.logs = [];
                         this.snapshots = [];
                         this.currentSnapshotIndex = 0;
                         
@@ -199,14 +649,6 @@
                     getCurrentSnapshot: function() {
                         if (this.snapshots.length === 0) return null;
                         return this.snapshots[this.currentSnapshotIndex];
-                    },
-                    
-                    nextSnapshot: function() {
-                        if (this.currentSnapshotIndex < this.snapshots.length - 1) {
-                            this.currentSnapshotIndex++;
-                            return this.snapshots[this.currentSnapshotIndex];
-                        }
-                        return null;
                     }
                 };
                 
@@ -220,62 +662,47 @@
             // Initialize communication module
             window.treeCommunication = new TreeCommunication({
                 onConnect: () => {
-                    updateConnectionStatus(true);
+                    console.log('Session started successfully');
+                    updateUIState(true);
                     if (window.treeUI) {
                         window.treeUI.setConnectionStatus(true);
                     }
                 },
                 onDisconnect: () => {
-                    updateConnectionStatus(false);
+                    console.log('Session ended');
+                    updateUIState(false);
                     if (window.treeUI) {
                         window.treeUI.setConnectionStatus(false);
                     }
                 },
                 onMessage: (data) => {
-                    // Log to console for debugging
                     console.log('Received message:', data);
                     logToUI(JSON.stringify(data));
                 },
                 onAnimationData: (data) => {
-                    // Process log messages through parsers
                     if (data.type === 'log') {
                         console.log('Processing log message:', data.message);
                         
-                        // Add log to accumulator
                         if (window.logAccumulator) {
                             window.logAccumulator.addLog(data.message);
                             
-                            // Parse logs and update animation
                             const snapshots = window.logAccumulator.parseLogs();
-                            console.log('Parsed snapshots:', snapshots.length);
                             
                             if (snapshots.length > 0) {
                                 const currentSnapshot = window.logAccumulator.getCurrentSnapshot();
                                 
                                 if (currentSnapshot && window.treeAnimator) {
                                     try {
-                                        window.treeAnimator.renderSnapshot(currentSnapshot, window.logAccumulator.currentTreeType);
-                                        console.log('Snapshot rendered:', currentSnapshot.operation);
+                                        // Normalize tree type for animation system
+                                        const animTreeType = window.logAccumulator.currentTreeType === 'avltree' ? 'avl' : window.logAccumulator.currentTreeType;
+                                        window.treeAnimator.renderSnapshot(currentSnapshot, animTreeType);
                                     } catch (error) {
                                         console.error('Error rendering snapshot:', error);
                                     }
                                 }
-                                
-                                // Enable animation controls
-                                const playBtn = document.getElementById('play-animation-btn');
-                                const resetBtn = document.getElementById('reset-tree-btn');
-                                if (playBtn) playBtn.disabled = false;
-                                if (resetBtn) resetBtn.disabled = false;
-                            } else {
-                                // Debug: Show what logs we have
-                                console.log('No snapshots created. Current logs:');
-                                window.logAccumulator.logs.forEach((log, i) => {
-                                    console.log(`  ${i + 1}: ${log}`);
-                                });
                             }
                         }
                     } else if (data.type === 'program') {
-                        // Handle program messages (like status updates)
                         console.log('Program message:', data.message);
                     }
                 },
@@ -288,100 +715,55 @@
             // Initialize UI module
             window.treeUI = new TreeUI(window.treeCommunication);
             
-            // Initialize animation controls
-            const playBtn = document.getElementById('play-animation-btn');
-            const pauseBtn = document.getElementById('pause-animation-btn');
-            const resetBtn = document.getElementById('reset-tree-btn');
-            
-            let animationInterval = null;
-            let isAnimating = false;
-            
-            // Play animation handler
-            if (playBtn) {
-                playBtn.addEventListener('click', function() {
-                    if (window.logAccumulator && window.logAccumulator.snapshots.length > 0) {
-                        isAnimating = true;
-                        playBtn.disabled = true;
-                        pauseBtn.disabled = false;
-                        
-                        // Start animation from current snapshot
-                        let currentIndex = window.logAccumulator.currentSnapshotIndex;
-                        const snapshots = window.logAccumulator.snapshots;
-                        
-                        animationInterval = setInterval(() => {
-                            if (currentIndex < snapshots.length) {
-                                const snapshot = snapshots[currentIndex];
-                                if (window.treeAnimator) {
-                                    window.treeAnimator.renderSnapshot(snapshot, window.logAccumulator.currentTreeType);
-                                }
-                                currentIndex++;
-                            } else {
-                                // Animation complete
-                                clearInterval(animationInterval);
-                                isAnimating = false;
-                                playBtn.disabled = false;
-                                pauseBtn.disabled = true;
-                            }
-                        }, 1000); // 1 second per snapshot
-                    }
-                });
-            }
-            
-            // Pause animation handler
-            if (pauseBtn) {
-                pauseBtn.addEventListener('click', function() {
-                    if (animationInterval) {
-                        clearInterval(animationInterval);
-                        animationInterval = null;
-                    }
-                    isAnimating = false;
-                    playBtn.disabled = false;
-                    pauseBtn.disabled = true;
-                });
-            }
-            
             // Reset tree handler
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
+            if (resetTreeBtn) {
+                resetTreeBtn.addEventListener('click', function() {
                     if (window.logAccumulator) {
                         window.logAccumulator.logs = [];
                         window.logAccumulator.snapshots = [];
                         window.logAccumulator.currentSnapshotIndex = 0;
                     }
                     if (window.treeAnimator) {
-                        window.treeAnimator.clearDisplay();
-                    }
-                    if (animationInterval) {
-                        clearInterval(animationInterval);
-                        animationInterval = null;
-                    }
-                    isAnimating = false;
-                    playBtn.disabled = true;
-                    pauseBtn.disabled = true;
-                });
-            }
-            
-            // Update system when tree type changes
-            const treeTypeSelect = document.getElementById('tree-type');
-            if (treeTypeSelect) {
-                treeTypeSelect.addEventListener('change', function() {
-                    const treeType = this.value;
-                    console.log('Tree type changed to:', treeType);
-                    
-                    // Update log accumulator
-                    if (window.logAccumulator) {
-                        window.logAccumulator.setTreeType(treeType);
-                    }
-                    
-                    // Clear the tree display
-                    if (window.treeAnimator) {
-                        window.treeAnimator.clearDisplay();
+                        window.treeAnimator.cleanup();
                     }
                 });
             }
             
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                if (window.treeAnimator) {
+                    window.treeAnimator.cleanup();
+                }
+                if (window.treeCommunication) {
+                    window.treeCommunication.disconnect();
+                }
+            });
+            
+            // Toggle logs functionality
+            if (toggleLogsBtn) {
+                let logsVisible = false;
+                
+                toggleLogsBtn.addEventListener('click', function() {
+                    logsVisible = !logsVisible;
+                    
+                    if (logsVisible) {
+                        logOutput.classList.remove('collapsed');
+                        toggleLogsBtn.textContent = 'Hide Logs';
+                    } else {
+                        logOutput.classList.add('collapsed');
+                        toggleLogsBtn.textContent = 'Show Logs';
+                    }
+                });
+            }
+            
+            // Initialize UI state
+            updateUIState(false);
+            
+            // Ensure logs start collapsed
+            if (logOutput) {
+                logOutput.classList.add('collapsed');
+            }
         });
     </script>
 </body>
 </html>
-

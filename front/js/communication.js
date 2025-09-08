@@ -47,15 +47,22 @@ class TreeCommunication {
   connect(url = '/session', treeType = 'btree') {
     if (this.isConnected) {
       console.warn('Already connected to server');
-      return;
+      return Promise.resolve();
     }
     
-    // Validate tree type
+    // Validate inputs
+    if (!url || typeof url !== 'string') {
+      const error = new Error('Invalid URL provided');
+      console.error(error.message);
+      this.options.onError(error);
+      return Promise.reject(error);
+    }
+    
     if (!['btree', 'avltree'].includes(treeType)) {
       const error = new Error('Invalid tree type. Must be "btree" or "avltree"');
       console.error(error.message);
       this.options.onError(error);
-      return;
+      return Promise.reject(error);
     }
     
     this.treeType = treeType;
@@ -63,10 +70,12 @@ class TreeCommunication {
     try {
       // Go server expects GET request to /session?type=btree, then upgrades to WebSocket
       this.upgradeToWebSocket(url, treeType);
+      return Promise.resolve();
       
     } catch (error) {
       console.error('Failed to create connection:', error);
       this.options.onError(error);
+      return Promise.reject(error);
     }
   }
   

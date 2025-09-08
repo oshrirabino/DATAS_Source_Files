@@ -7,6 +7,10 @@
 
 class TreeAnimator {
   constructor(containerId) {
+    if (!containerId || typeof containerId !== 'string') {
+      throw new Error('Container ID must be a valid string');
+    }
+    
     this.container = document.getElementById(containerId);
     if (!this.container) {
       throw new Error(`Container with id '${containerId}' not found`);
@@ -23,6 +27,7 @@ class TreeAnimator {
     // Animation state
     this.isAnimating = false;
     this.animationQueue = [];
+    this.animationTimeouts = []; // Track timeouts for cleanup
     
     this.setupStyles();
   }
@@ -40,9 +45,9 @@ class TreeAnimator {
         position: absolute;
         width: 60px;
         height: 60px;
-        background: #3498db;
+        background: linear-gradient(135deg, #3498db, #2980b9);
         color: white;
-        border: 2px solid #2c3e50;
+        border: 3px solid #2c3e50;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -52,12 +57,27 @@ class TreeAnimator {
         cursor: pointer;
         transition: all 0.3s ease;
         z-index: 10;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      
+      .tree-node.btree-node {
+        background: linear-gradient(135deg, #e67e22, #d35400);
+        border-radius: 8px;
+        width: 80px;
+        height: 50px;
+        font-size: 12px;
       }
       
       .tree-node:hover {
-        background: #2980b9;
+        background: linear-gradient(135deg, #2980b9, #1f4e79);
         transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      }
+      
+      .tree-node.btree-node:hover {
+        background: linear-gradient(135deg, #d35400, #a04000);
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
       }
       
       .tree-node.highlighted {
@@ -82,11 +102,17 @@ class TreeAnimator {
       
       .tree-connection {
         position: absolute;
-        height: 2px;
-        background: #7f8c8d;
+        height: 3px;
+        background: linear-gradient(90deg, #3498db, #2980b9);
         transform-origin: left center;
         transition: all 0.3s ease;
         z-index: 5;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      
+      .tree-connection.btree-connection {
+        background: linear-gradient(90deg, #e67e22, #d35400);
       }
       
       .tree-caption {
@@ -139,24 +165,53 @@ class TreeAnimator {
    * @param {string} treeType - 'btree' or 'avl'
    */
   renderSnapshot(snapshot, treeType = 'avl') {
-    this.clearDisplay();
-    this.currentSnapshot = snapshot;
-    
-    if (!snapshot || !snapshot.root) {
+    try {
+      // Validate inputs
+      if (!snapshot || typeof snapshot !== 'object') {
+        console.warn('Invalid snapshot provided to renderSnapshot');
+        this.showEmptyTree();
+        return;
+      }
+      
+      // Normalize tree type (convert 'avltree' to 'avl')
+      if (treeType === 'avltree') {
+        treeType = 'avl';
+      }
+      
+      if (!['btree', 'avl'].includes(treeType)) {
+        console.warn('Invalid tree type provided to renderSnapshot:', treeType);
+        treeType = 'avl'; // Default fallback
+      }
+      
+      this.clearDisplay();
+      this.currentSnapshot = snapshot;
+      
+      if (!snapshot.root) {
+        this.showEmptyTree();
+        return;
+      }
+      
+      // Build tree structure from node map
+      const treeStructure = this.buildTreeStructure(snapshot, treeType);
+      
+      if (!treeStructure) {
+        console.warn('Failed to build tree structure');
+        this.showEmptyTree();
+        return;
+      }
+      
+      if (treeType === 'btree') {
+        this.renderBTree(treeStructure);
+      } else {
+        this.renderAVLTree(treeStructure);
+      }
+      
+      this.showCaption(snapshot.operation);
+      
+    } catch (error) {
+      console.error('Error rendering snapshot:', error);
       this.showEmptyTree();
-      return;
     }
-    
-    // Build tree structure from node map
-    const treeStructure = this.buildTreeStructure(snapshot, treeType);
-    
-    if (treeType === 'btree') {
-      this.renderBTree(treeStructure);
-    } else {
-      this.renderAVLTree(treeStructure);
-    }
-    
-    this.showCaption(snapshot.operation);
   }
 
   /**
@@ -292,7 +347,10 @@ class TreeAnimator {
     if (treeType === 'btree') {
       this.calculateBTreePositions(treeStructure, positions, 0, containerWidth, 0);
     } else {
-      this.calculateAVLPositions(treeStructure, positions, containerWidth / 2, 50, 0);
+      // For AVL trees, calculate depth first, then position with dynamic spacing
+      const maxDepth = this.calculateAVLTreeDepth(treeStructure);
+      const startX = containerWidth / 2;
+      this.calculateAVLPositions(treeStructure, positions, startX, 70, 0, maxDepth);
     }
     
     return positions;
@@ -327,25 +385,83 @@ class TreeAnimator {
   }
 
   /**
-   * Calculate positions for AVL nodes
+   * Calculate the maximum depth of an AVL tree
+   * @param {Object} node - AVL node
+   * @param {number} currentDepth - Current depth
+   * @returns {number} Maximum tree depth
+   */
+  calculateAVLTreeDepth(node, currentDepth = 0) {
+    if (!node) return currentDepth;
+    
+    const leftDepth = node.left ? this.calculateAVLTreeDepth(node.left, currentDepth + 1) : currentDepth;
+    const rightDepth = node.right ? this.calculateAVLTreeDepth(node.right, currentDepth + 1) : currentDepth;
+    
+    return Math.max(leftDepth, rightDepth);
+  }
+
+  /**
+   * Calculate the width of an AVL tree to determine optimal positioning
+   * @param {Object} node - AVL node
+   * @param {number} level - Tree level
+   * @param {number} maxDepth - Maximum tree depth
+   * @returns {number} Tree width
+   */
+  calculateAVLTreeWidth(node, level, maxDepth) {
+    if (!node) return 0;
+    
+    // Dynamic spacing based on tree depth and current level
+    const baseSpacing = 40; // Base spacing for deepest nodes
+    const depthRatio = (maxDepth - level) / maxDepth; // Higher nodes get more space
+    const spacing = Math.max(baseSpacing * (1 + depthRatio * 3.5), 30);
+    
+    let leftWidth = 0;
+    let rightWidth = 0;
+    
+    if (node.left) {
+      leftWidth = spacing + this.calculateAVLTreeWidth(node.left, level + 1, maxDepth);
+    }
+    if (node.right) {
+      rightWidth = spacing + this.calculateAVLTreeWidth(node.right, level + 1, maxDepth);
+    }
+    
+    return leftWidth + rightWidth;
+  }
+
+  /**
+   * Calculate positions for AVL nodes with improved spacing and dynamic angles
    * @param {Object} node - AVL node
    * @param {Object} positions - Position mapping
    * @param {number} x - X position
    * @param {number} y - Y position
    * @param {number} level - Tree level
    */
-  calculateAVLPositions(node, positions, x, y, level) {
+  calculateAVLPositions(node, positions, x, y, level, maxDepth) {
     if (!node) return;
     
     positions[node.address] = { x: x - this.nodeSize / 2, y: y };
     
-    const spacing = Math.max(this.siblingSpacing, this.minSpacing * Math.pow(0.8, level));
+    // Dynamic spacing based on tree depth and current level
+    const baseSpacing = 40; // Base spacing for deepest nodes
+    const depthRatio = (maxDepth - level) / maxDepth; // Higher nodes get more space
+    let spacing = Math.max(baseSpacing * (1 + depthRatio * 2.5), 30);
     
+    // Check if tree is getting too wide and adjust spacing
+    const containerWidth = this.container.clientWidth;
+    const maxWidth = containerWidth - 100; // Leave 50px margin on each side
+    const currentWidth = this.calculateAVLTreeWidth(node, level, maxDepth);
+    
+    if (currentWidth > maxWidth && level < 3) {
+      // Scale down spacing for higher levels if tree is too wide
+      const scaleFactor = maxWidth / currentWidth;
+      spacing = spacing * scaleFactor;
+    }
+    
+    // Calculate child positions with improved spacing
     if (node.left) {
-      this.calculateAVLPositions(node.left, positions, x - spacing, y + this.levelHeight, level + 1);
+      this.calculateAVLPositions(node.left, positions, x - spacing, y + this.levelHeight, level + 1, maxDepth);
     }
     if (node.right) {
-      this.calculateAVLPositions(node.right, positions, x + spacing, y + this.levelHeight, level + 1);
+      this.calculateAVLPositions(node.right, positions, x + spacing, y + this.levelHeight, level + 1, maxDepth);
     }
   }
 
@@ -396,7 +512,7 @@ class TreeAnimator {
       if (child) {
         const childPos = positions[child.address];
         if (childPos) {
-          this.createConnectionElement(parentPos, childPos);
+          this.createConnectionElement(parentPos, childPos, 'btree');
         }
         this.renderBTreeConnections(child, positions);
       }
@@ -448,7 +564,7 @@ class TreeAnimator {
     if (node.left) {
       const leftPos = positions[node.left.address];
       if (leftPos) {
-        this.createConnectionElement(parentPos, leftPos);
+        this.createConnectionElement(parentPos, leftPos, 'avl');
       }
       this.renderAVLConnections(node.left, positions);
     }
@@ -456,7 +572,7 @@ class TreeAnimator {
     if (node.right) {
       const rightPos = positions[node.right.address];
       if (rightPos) {
-        this.createConnectionElement(parentPos, rightPos);
+        this.createConnectionElement(parentPos, rightPos, 'avl');
       }
       this.renderAVLConnections(node.right, positions);
     }
@@ -471,6 +587,11 @@ class TreeAnimator {
   createNodeElement(node, position, treeType) {
     const element = document.createElement('div');
     element.className = 'tree-node';
+    
+    if (treeType === 'btree') {
+      element.className += ' btree-node';
+    }
+    
     element.setAttribute('data-address', node.address);
     element.style.left = position.x + 'px';
     element.style.top = position.y + 'px';
@@ -492,10 +613,15 @@ class TreeAnimator {
    * Create a connection element
    * @param {Object} fromPos - Source position
    * @param {Object} toPos - Destination position
+   * @param {string} treeType - 'btree' or 'avl'
    */
-  createConnectionElement(fromPos, toPos) {
+  createConnectionElement(fromPos, toPos, treeType = 'avl') {
     const element = document.createElement('div');
     element.className = 'tree-connection';
+    
+    if (treeType === 'btree') {
+      element.className += ' btree-connection';
+    }
     
     const dx = toPos.x - fromPos.x;
     const dy = toPos.y - fromPos.y;
@@ -599,9 +725,27 @@ class TreeAnimator {
     
     element.classList.add('searching');
     
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       element.classList.remove('searching');
     }, duration);
+    
+    this.animationTimeouts.push(timeout);
+  }
+  
+  /**
+   * Clean up all animations and timeouts
+   */
+  cleanup() {
+    // Clear all timeouts
+    this.animationTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.animationTimeouts = [];
+    
+    // Clear animation queue
+    this.animationQueue = [];
+    this.isAnimating = false;
+    
+    // Clear display
+    this.clearDisplay();
   }
 }
 
